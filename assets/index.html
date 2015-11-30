@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimum-scale=1.0, maximum-scale=1.0">
+<title></title>
+
+<link href="sw/style.css" rel="stylesheet" type="text/css">
+<link href="css/common.css" rel="stylesheet" type="text/css">
+<link href="font-awesome-4.1.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+<style type="text/css">
+
+a:link,a:visited,a:hover{
+	color:#f56931;
+	text-decoration:none; 
+	
+}
+body{	
+	background-image: url("imgs/bg.png");
+    background-repeat: no-repeat;
+	background-size:100%;
+}
+.footer{
+	opacity :0.8;	
+	
+}
+.footer  span{
+	font-size:18px;
+}
+
+.header{
+	background-color:transparent;
+	margin-top:60px;
+	text-align:center;
+}
+
+#wrapper{	
+	margin-top:100px;	
+}
+#scroller{
+	padding:5px;
+}
+.bg{
+	position:absolute;
+	left:0px;
+	right:0px;
+	top:0px;
+	bottom:0px;	
+	width:100%;
+	height:100%;	
+	z-index:-10;
+}
+.bg > img{
+	width:100%;	
+	position:relative;
+	top:-60px;
+	height:100%;
+}
+.bg .mask{
+	
+	position:absolute;
+	left:0px;
+	right:0px;
+	top:0px;
+	bottom:0px;		
+}
+
+
+.footer{	
+	margin:0px;
+	padding-top:10px;
+	text-align:center;
+	color:white;	
+	font-size:18px;
+	width:100%;
+	font-size:0px;
+	z-index:30;
+	position:fixed;
+	bottom:0px;
+}
+
+
+input {
+	line-height:40px;
+	font-size:16px;
+	width:95%;
+	margin:5px;
+	margin-bottom:10px;	
+	border:0px;
+	border-radius:1px;
+	padding-left:10px;
+}
+input.s{
+	width:40%;
+}
+button.b1,button.b2{
+	border:1px solid #f56931;
+	border-radius:2px;
+	background-color:transparent;
+	line-height:40px;
+	font-size:16px;
+	color:#f56931;
+	
+}
+
+.btnDisable{
+	color:gray;
+	border:1px solid gray;
+}
+button.b2{	
+	margin-top:20%;
+	width:90%;
+	background-color:white;
+	border:0px;	
+	
+}
+</style>
+<script type="text/javascript" src="js/iscroll-probe.js"></script>
+<script type="text/javascript" src="js/jquery-1.11.2.min.js"></script>
+<script type="text/javascript" src="js/jsbridge.js"></script>
+<script type="text/javascript" src="js/ois.js"></script>
+<script type="text/javascript" src="js/pulldownup.js"></script>
+<script type="text/javascript" src="js/dialog.js"></script>
+<script type="text/javascript">
+
+var ois = new OIS();
+var pulldownup = null;
+var dialog = new Dialog();
+
+
+
+function autologin(callback){
+	var request = JSBridge.read("userinfo");		
+	if(!request || request =="") {
+		callback();
+		return;	
+	}
+	
+	request		= JSON.parse(request);
+	ois.login(
+		request,
+		function(code, data){					
+			JSBridge.set("currentUser", request.user);
+			var token= data.token;
+			JSBridge.set("token", token);
+			window.location = "main.html"
+		}, 
+		function(code){
+			callback();
+		}
+	)
+	
+}
+
+function regist(){
+	//		
+	var request = 
+	{
+		
+		
+	}
+	
+	request.user = $("#user").val();
+	request.phone= request.user;
+	request.password = $("#password").val();		
+	request.password2 = $("#password2").val();		
+	request.smscode = $("#exampleInputAmount").val();		
+	//alert(JSON.stringify(request))
+	//$.support.cors = true;
+	if(request.user == '' || request.password == ''){
+		dialog.toast("用户名/口令不能为空!")			
+		return;
+	}
+	if(request.password2== ''){
+		dialog.toast("确认密码不能为空!")			
+		return;
+	}
+	if(request.password != request.password2){
+		dialog.toast("两次口令不一致!")			
+		return;
+	}
+	
+	if(request.password.length<6){
+		dialog.toast("密码长度不能少于6位")			
+		return;
+	}
+	
+	if(request.smscode == ''){
+		dialog.toast("验证码不能为空")		
+		return;
+	}
+	
+	dialog.show(); 		
+	
+	ois.regist(
+		request,
+		function(code, data){
+			
+			dialog.hide();
+			window.location = "login2.html"
+		}, 
+		function(code){			
+			dialog.toast(ois.getinfoBycode(code));
+			dialog.hide();				
+	})
+}
+
+var timedown = function(jqObj){
+	var time = 60;
+	var mHanler = setInterval(function(){
+		jqObj.text(--time)			
+		if(time == 0) {
+			clearInterval(mHanler);
+			jqObj.attr('disabled', false); 
+			jqObj.removeClass('btnDisable');
+			jqObj.text('获取激活短信'); 
+		}
+	}, 1000);
+	
+}
+
+
+function uiinit(){
+	$('#btnAuthcode').on('click', function(event){				
+		var that = this;
+		event.preventDefault();			
+		var phone = $("#user").val();
+		if(phone== ''){
+			dialog.toast("手机号不能为空");
+			return;
+		}
+		if(!/^\d{11}$/.test(phone)){			 
+			dialog.toast("请填写正确的手机号");				
+			return;
+		}
+		if(registed){
+			dialog.toast(ois.getinfoBycode(603));
+			return;
+		}
+		$(that).attr('disabled', true); 
+		$(that).addClass('btnDisable');	
+		dialog.show();
+		ois.getAuthcode(
+		
+			phone,				
+			function(code, data){				
+				timedown($(that));
+				dialog.hide();				
+			}, 
+			function(code){
+				
+				dialog.toast(ois.getinfoBycode(code));
+				$(that).attr('disabled', false); 
+				$(that).removeClass('btnDisable');	
+				dialog.hide();				
+		})
+	});	
+	//$(".logo")[0].style.webkitTransition = 'all ease-out 30s';
+	//$(".logo")[0].style.webkitTransform = "translate3D(0,60px,200px)";
+}	
+function loaded () {
+	$(document).off('userdisable');
+	autologin(function(){
+		uiinit();
+	});
+	
+	var clickcount = 0, lastclicktime = 0;
+	$('.title').on('click', function(){
+		
+		if(lastclicktime == 0)
+		   lastclicktime = new Date().getTime();
+		if(new Date().getTime() - lastclicktime < 1000){
+			
+			lastclicktime = new Date().getTime();
+			clickcount++;					
+		}else{
+			clickcount = 0;
+		}
+		
+		if(clickcount>=5){			
+			$("#oiscfg").show();		
+			
+		}
+	})
+	$("#btnois").on("click", function(){
+		JSBridge.set("ois_ip", $("#ois_sev").val())
+		JSBridge.set("ois_port", $("#ois_port").val())
+		window.location = "index.html";
+	})
+	
+	
+}
+//判断用户名是否被占用
+var registed= false;
+function checkUser(){
+	
+	var user= $("#user").val();
+	if(user && (/^\d{11}$/.test(user))){
+		ois.checkUser(user, function(code, data){
+			//用户没有被占用
+			registed= false;
+		}, function(code){
+			
+			if(code== 603){
+				registed= true;
+				dialog.toast(ois.getinfoBycode(code));
+			}
+		});
+		
+	}
+	
+	
+}
+
+document.addEventListener('touchmove', function (e) { e.preventDefault(); }, false);
+document.onselectstart = function() { return false; }
+
+
+</script>
+
+
+</head>
+<body onload="loaded()">
+
+<div class="header">
+	<div>		
+		<div style="margin-right:10px;font-size:32px;color:red;display:inline;position:relative;top:5px">
+			<span style="font-size:34px;color:#f56931" class="icon-user"></span>
+		</div>
+		<div style="display:inline;font-size:24px">登录</div>		
+	</div>
+	
+</div><!-- /header -->
+
+
+<div id="wrapper">
+	<div id="scroller">		
+		<input  type="text"  id="user"  value="" placeholder="手机号">		
+		<div style="position:relative;left:0px; top:0px;">
+			<input type="password"  id="password" value="" placeholder="请输入密码">
+			<div onclick="showHidePwd()" style="width:100px;text-align:center;height:100%; position:absolute;right: 0px;top:0px;color:gray;">
+				<span id="showHidePwdBtn" style="position:relative;top:18px;">显示</span>
+			</div>
+		</div>
+				
+		<div style="text-align:right;color;padding-right:10px">
+			<a href="javascript:forget()" style="color:#ffffff;">忘记密码</a>
+		</div>
+		
+		<div style="text-align:center;">
+			<button class="b2"  onclick="login()">登录</button>		
+		</div>
+	</div>
+</div>
+
+
+
+</body>
+</html>

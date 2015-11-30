@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimum-scale=1.0, maximum-scale=1.0">
+<title>SD卡设置</title>
+
+<link rel="stylesheet" href="font-awesome-4.1.0/css/font-awesome.min.css"  />
+<link rel="stylesheet" href="css/bootstrap.min.css"/>
+<link rel="stylesheet" href="sw/style.css">
+<link rel="stylesheet" href="css/common.css"/>
+<script type="text/javascript" src="js/jquery-1.11.2.min.js"></script>
+<script type="text/javascript" src="js/iscroll-probe.js"></script>
+<script type="text/javascript" src="js/jsbridge.js"></script>
+<script type="text/javascript" src="js/ois.js"></script>
+<script type="text/javascript" src="js/dialog.js"></script>
+<style>
+.btn-mysuccess, .btn-mysuccess:hover{
+	color: #fff;
+	background-color: #f56931;
+	border-color: #f56931;
+}
+.btn-mydefault, .btn-mydefault:hover{
+	color: #333;
+	background-color: #fff;
+	border-color: #dbdbdb;
+}
+</style>
+</head>
+<body>
+	<div class="header">
+		<div>
+			<div class="back" id="backTopc"><span class="icon-back"></span></div>
+			<div id="settingTitle" class="title">SD卡设置</div>
+		</div>
+	</div>
+	<div id="wrapper" style="bottom: 0px;">
+		<div id="scroller">
+			<div class="content" >
+				<ul class="list-group">
+					<li class="list-group-item clearfix" >
+						<div class="pull-left">SD卡总容量</div>
+						<div class="pull-right text-grey" id="sdTotal">0MB</div>
+					</li>
+					<li class="list-group-item clearfix" >
+						<div class="pull-left">SD卡剩余容量</div>
+						<div class="pull-right text-grey" id="sdRemain">0MB</div>
+					</li>
+					<li class="list-group-item clearfix" >
+						<div class="pull-left">SD卡状态</div>
+						<div class="pull-right text-grey" id="sdStatus">未插卡</div>
+					</li>
+				</ul>
+				<ul class="list-group">
+					<li class="list-group-item clearfix" >
+						<div class="pull-left">启用录像</div>
+						<div class="pull-right text-orange">
+							<div class="btn-group btn-group-sm">
+								<div class="btn btn-mysuccess">ON</div>
+								<div class="btn btn-mydefault">OFF</div>
+							</div>
+						</div>
+					</li>
+					<li class="list-group-item clearfix" id="sdRecordSwitch">
+						<div class="pull-left">设置录制时间</div>
+						<div class="pull-right text-orange">
+							<span class="icon-more icon-lg" ></span>
+						</div>
+					</li>
+				</ul>
+			</div>
+		</div>
+	</div>
+	
+</body>
+<script type="text/javascript">
+	var myScroll;
+	var ois = new OIS();
+	var dialog = new Dialog();
+	var settings = {"cameraSwitch" : "power", "alertSwitch" : "alert", "sd" : "record"};
+	var userID = JSBridge.get("currentUser");
+	var mac = JSBridge.get("mac");
+	//var mac = "38:bc:1a:e3:49:97";
+	var setting = localStorage.getItem("cameraSetting"); 
+	var item = settings[setting];///当前是是设置的有效日期是power/alert/record
+	var cameraInfo = JSON.parse(localStorage.getItem("currentCamera")); 	
+	var cameraID = cameraInfo.base.camera_id;
+	var total = cameraInfo.sdcard.total;
+	var remain = cameraInfo.sdcard.total - cameraInfo.sdcard.used;
+	var onOff ;
+	var lastClickTime = new Date().getTime();
+	$(document).ready(function(){
+		init();
+		onOff.on('click',function() {
+			var currentTime = new Date().getTime();
+			if(currentTime - lastClickTime > 500){	
+				lastClickTime = currentTime;
+				var request = {	
+						"src":mac, //发起请求的设备id, 一般为手机端和PC
+						"dest":cameraID, //请求目标的设备id，一般为摄像头
+						"config":
+						{
+							"record":"", //on:表示打开功能，off：关闭功能
+							"schedule":cameraInfo.record.schedule,
+							"days":cameraInfo.record.days //重复周期，为从星期一到星期天的位组合，自左向右为星期一到星期日.
+						}
+					};
+				var $this =  $(this);
+				var isON =  $(this).find(".btn").eq(0).hasClass("btn-mysuccess");
+				$(this).find(".btn").toggleClass("btn-mydefault").toggleClass("btn-mysuccess");  
+				if(isON){//现在想要关闭
+					request.config.record = "off";
+					setSwitch("record","off",request,function(){
+						$("#sdRecordSwitch div:eq(1)").removeClass("text-orange").addClass("text-grey");
+						$("#sdRecordSwitch").off("click");
+					},function(){
+						setTimeout(function(){
+							$this.find(".btn").toggleClass("btn-mydefault").toggleClass("btn-mysuccess"); 
+						},1000);
+					});
+				}else{
+					request.config.record = "on";
+					setSwitch("record","on",request,function(){
+						$("#sdRecordSwitch div:eq(1)").removeClass("text-grey").addClass("text-orange");
+						$("#sdRecordSwitch").on("click",function(){
+							window.location.href="./timeSwitch.html";
+							localstorage.setItem("cameraSetting","sdRecordSwitch");
+						});
+					},function(){
+						setTimeout(function(){
+							$this.find(".btn").toggleClass("btn-mydefault").toggleClass("btn-mysuccess"); 
+						},1000);
+					});
+				}
+			}
+		});
+		
+		$("#backTopc").on("click",function(){
+			window.location.href="./cameraSetting.html?cameraid="+cameraID;
+		})
+	}); 
+	$(document).on("back",function(){
+		$("#backTopc").trigger("click");
+	});
+	function init(){
+		onOff = $(".btn-group").eq(0);
+		myScroll = new IScroll('#wrapper',{ mouseWheel: true ,click:true, probeType:1, bounce:true});
+		$("#sdTotal").html(total+"MB");
+		$("#sdRemain").html(remain+"MB");
+		if(total == 0){
+			$("#sdStatus").html("未检测到");
+		}else{
+			$("#sdStatus").html("已插入");
+		}
+		if (cameraInfo.record.status == 1) {
+			setSwitchState(onOff, true);//开启开关；
+			$("#sdRecordSwitch").on("click",function(){
+				window.location.href="./timeSwitch.html";
+				localstorage.setItem("cameraSetting","sdRecordSwitch");
+			});
+		} else {
+			setSwitchState(onOff, false);
+			$("#sdRecordSwitch div:eq(1)").removeClass("text-orange").addClass("text-grey");
+			$("#sdRecordSwitch").off("click");
+		}
+	}
+	function setSwitchState(obj,state){
+		if(state){
+			obj.find(".btn").eq(0).removeClass("btn-mydefault").addClass("btn-mysuccess");
+			obj.find(".btn").eq(1).removeClass("btn-mysuccess").addClass("btn-mydefault");
+		}else{
+			obj.find(".btn").eq(0).removeClass("btn-mysuccess").addClass("btn-mydefault");
+			obj.find(".btn").eq(1).removeClass("btn-mydefault").addClass("btn-mysuccess");
+		}
+	}
+	function setSwitch(item,value,request,success,fail){//item:是表示设置的什么定时开关：power/alert/record;value:表示是开/关
+		dialog.show("正在提交")
+		ois.setSwitch(request,function(code, data){
+			if(success){
+				success();
+			}
+			cameraInfo[item].status = request.config[item] == "on" ? 1:0 ;
+			localStorage.setItem("currentCamera", JSON.stringify(cameraInfo));
+			dialog.hide();
+			dialog.toast("设置成功");
+			
+		},function(code){
+			if(fail){
+				fail();
+			}
+			dialog.hide();
+			if(code ==  623){
+				dialog.toast("摄像头离线了");
+			}else{
+				dialog.toast("设置失败");
+			}
+		});
+	}
+	
+</script>
+</html>

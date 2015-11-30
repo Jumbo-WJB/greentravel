@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimum-scale=1.0, maximum-scale=1.0">
+<title>添加摄像头</title>
+<link rel="stylesheet" href="css/bootstrap.min.css"/>
+<link rel="stylesheet" href="css/sweetalert.css">
+<link rel="stylesheet" href="css/common.css"/>
+<link rel="stylesheet" href="sw/style.css" >
+<script type="text/javascript" src="js/jquery-1.11.2.min.js"></script>
+<script src="js/sweetalert-dev.js"></script>
+<script type="text/javascript" src="js/jsbridge.js"></script>
+<script type="text/javascript" src="js/ois.js"></script>
+<script type="text/javascript" src="js/dialog.js"></script>
+<style>
+	body{
+		background-color:#f0f0f0;
+		font-size:16px;
+	}
+	.sweet-alert h2 {
+		font-size:18px;
+	 }
+	.sweet-alert p {
+		font-size:16px;
+	} 
+	.icon-info .path1:before {
+		content: "\e609";
+		color: #f56931;
+	}
+	
+	.page{
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		width: 100%;
+	}
+	.wrapper {	
+		position:absolute;
+		z-index: 1;
+		top: 45px;
+		bottom: 0px;
+		left: 0;
+		width: 100%;
+		padding:10px;	
+		overflow: hidden;
+	
+	}
+	.position-btn{
+		position:absolute;
+		bottom:70px;
+		left:0;
+	}
+	.pic-camera{
+		width:200px;
+		height:360px;
+		margin:0 auto;
+		background:url('./imgs/camera.png') no-repeat;
+		background-color:#eee;
+		background-origin:content;                /*从content区域开始显示背景*/  
+	    background-position:50% 50%;              /*图片上下左右居中*/  
+	    background-size:contain;  
+	}
+	.link-ccanQR{
+		position:absolute;
+		bottom:16px;
+		right:10px;
+		color:#999;
+		font-size:14px;
+	}
+	.level2page{
+		height:100%;
+		position: relative;
+		display:none;
+	}
+	.search-tip{
+		box-sizing:content-box;
+		height:40px;
+		line-height:40px;
+		color:#f56931;
+		text-align:center;
+		padding:20px 0;
+		position:relative;
+	}
+	.search-bg{
+		width:150px;
+		height:200px;
+		position:relative;
+		margin:0 auto;
+		background:url('./imgs/camera.png') no-repeat;
+		background-color:#f0f0f0;
+		background-origin:content;                /*从content区域开始显示背景*/  
+	    background-position:50% 50%;              /*图片上下左右居中*/  
+	    background-size:contain;   
+	}
+	.search-tip-pic{
+		position: absolute;
+		bottom: 40px;
+		right: -6px;
+		width: 40px;
+		height: 40px;
+		font-size: 40px;
+		font-weight:bold;
+		color: #f56931;
+	}
+	   /*定义动画*/
+      
+      @-webkit-keyframes round_animation {
+          0%{
+              -webkit-transform:rotate(0deg);
+              width:200px;
+              height:200px;
+          }
+          100%{
+              -webkit-transform:rotate(360deg);
+              width:200px;
+              height:200px;
+              left:0px;
+              top:0px;
+          }
+      }
+	.search-box{
+		width:200px;
+		height:200px;
+		margin:0 auto;
+		position:relative;
+		background:url('./imgs/circle.png') no-repeat;
+		background-color:#f0f0f0;
+		background-origin:content;                /*从content区域开始显示背景*/  
+	    background-position:50% 50%;              /*图片上下左右居中*/  
+	    background-size:contain;   
+	}
+	.search-circle{
+		width:200px;
+		height:200px;
+		border-radius:50px;
+		background:url('./imgs/red_point.png') no-repeat;
+		background-origin:content;                /*从content区域开始显示背景*/  
+	    background-position:50% 50%;              /*图片上下左右居中*/  
+	    background-size:contain;   
+	    -webkit-animation-name:round_animation;
+		-webkit-animation-duration:8s;
+		-webkit-animation-timing-function:linear;
+		-webkit-animation-delay:0.5s;
+		-webkit-animation-iteration-count:infinite;
+		-webkit-animation-direction:normal;
+		-webkit-animation-play-state:running;
+	}
+	.search-center{
+		width:80px;
+		height:80px;
+		position:absolute;
+		top:50%;
+		left:50%;
+		margin-top:-40px;
+		margin-left:-40px;
+		background:url('./imgs/camera.png') no-repeat;
+		background-origin:content;                /*从content区域开始显示背景*/  
+	    background-position:50% 50%;              /*图片上下左右居中*/  
+	    background-size:contain;
+	}
+	.wifiScanlist-item {
+		background:url('./imgs/camera_sm.png') no-repeat;
+		background-color:#fff;
+		background-origin:content;                /*从content区域开始显示背景*/  
+	    background-position:10px 50%;              /*图片上下左右居中*/  
+	    background-size:34px 34px;
+	    padding-left:60px;
+	}
+	
+</style>
+</head>
+<body>
+	<div id="page1" class="page">
+		<div class="header">
+			<div>
+				<div class="back" id="back1" onclick="jumpPage(0)"><span class="icon-back"></span></div>
+				<div class="title">添加摄像头</div>
+			</div>
+		</div>
+		<div class="wrapper" style="padding: 0px;">
+			<div class="pic-camera"></div>
+			<div style="padding:0 10px;position:absolute;bottom:90px;left:0;width:100%;"><button type="button" class="btn-orange" id="linkAddWifi" >配置无线扫描摄像头</button></div>
+			<div class="link-ccanQR" id="linkScanQR">有线接入并扫描二维码添加 &gt;</div>
+		</div>
+	</div>
+	<!-- 添加Wifi -->
+	<div id="page2" class="page" style="display:none;">
+		<div class="header">
+			<div>
+				<div class="back" id="back2" onclick="jumpPage(1)"><span class="icon-back"></span></div>
+				<div class="title">摄像头配置</div>
+			</div>
+			
+		</div>
+		<div class="wrapper" style="bottom: 0px;padding:10px;">
+			<p>摄像头连接的Wi-Fi</p>
+			<ul class="list-group" style="margin-bottom:10px;">
+				<li class="list-group-item " >
+					<span class="icon-wifi"></span>
+					<span id="wifiName"></span><!-- Wifi名字 -->
+				</li>
+				<li class="list-group-item " >
+					<span class="icon-lock" ><span class="path1"></span><span class="path2"></span></span>
+					<input id="wifiPs" type="password" style="border:0 none;outline:0 none;width:75%;" placeholder="请输入wifi接入点登录密码"/>
+					<input id="wifiPstext" type="text" style="border:0 none;outline:0 none;width:80%;display:none;" placeholder="请输入wifi密码"/>
+					<span id="changepstype" pstype="ps" style="border-left:1px solid #ddd; padding-left:10px;">显示</span>
+				</li>
+			</ul>
+			<div><span id="rmWifiPs" class="icon-Squarebig" style="color:#f56931;font-weight:bold;">记住密码</span></div>
+			<p style="color:red; padding:20px 0;">请接通摄像头电源，等待摄像头语音提示“已准备连接网络”后，再点击下一步</p>
+			<button type="button" class="btn-orange" id="scanUseWifi">下一步</button>
+		</div>
+	</div>
+	<!-- 搜索摄像头 -->
+	<div id="page3" class="page" style="display:none;">
+		<div class="header">
+			<div>
+				<div class="back" id="back3"><span class="icon-back"></span></div>
+				<div class="title">摄像头配置</div>
+			</div>	
+		</div>
+		<div class="wrapper" >
+			<!-- 显示正在搜索的页面 -->
+			<div id="page3_1" class="level2page">
+				<p style="position:absolute; top:0px;left:0px;width:100%;text-align:center;">wifi接入点名称:<span id="wifiName1"></span></p>
+				<p class="search-tip"><span class="icon-search" style="font-size:40px;"></span><span style="position: relative;top: -10px;">正在查找摄像头，请稍等···</span></p>
+				<div class="search-box">
+					<div class="search-circle"></div>
+					<div class="search-center"></div>
+				</div>
+				<div style="text-align:center;margin-top:20px;"><span id="countDown"></span>s</div>
+				<div class="btn-orange position-btn" id="stopScanWifi1">停止</div>
+			</div>
+			<!-- 显示搜索出错的页面 -->
+			<div id="page3_2" class="level2page">
+				<p class="search-tip">无法搜索到摄像头，请重试！</p>
+				<div class="search-bg">
+					<span class="icon-info search-tip-pic" style="font-size:50px; font-weight:normal;"><span class="path1"></span><span class="path2"></span><span class="path3"></span></span>
+				</div>
+				<div class="btn-orange  position-btn" id="restartScanWifi">重新扫描</div>
+			</div>
+			<!-- 显示正在搜索已经有摄像头列表的页面的页面 -->
+			<div id="page3_3" class="level2page">
+				<p class="search-tip"><span class="icon-search" style="font-size:40px;"></span><span style="position: relative;top: -10px;">正在查找摄像头，请稍等···</span></p>
+				<ul id="wifiScanlist" class="list-group">
+			
+				</ul>
+				<div class="btn-orange position-btn" id="stopScanWifi2">停止扫描并绑定摄像头</div>
+			</div>
+			<!-- 显示绑定摄像头的页面 -->
+			<div id="page3_4" class="level2page">
+				<p>选择摄像头</p>
+				<ul id="cameraBindlist" class="list-group">
+			
+				</ul>
+				<div class="btn-orange position-btn" id="bindCameralist">绑定</div>
+			</div>
+			<!-- 完成界面 -->
+			<div id="page3_5" class="level2page">
+				<p>选择摄像头</p>
+				<ul id="cameralist" class="list-group">
+			
+				</ul>
+				<div class="btn-orange position-btn" id="complete">完成</div>
+			</div>
+		</div>
+	</div>
+	
+	<!-- 二维码扫描添加 -->
+	<div id="page5" class="page" style="display:none;">
+		<div class="header">
+			<div>
+				<div class="back" id="back5" onclick="jumpPage(1)"><span class="icon-back"></span></div>
+				<div class="title">添加摄像头</div>
+			</div>	
+		</div>
+		<div class="wrapper" >
+			<input id="cameraQRNum" type="text" class="form-control" style="" placeholder="摄像头序列号"/><!-- 摄像头序列号 -->
+			<input id="cameraNameQR" type="text" class="form-control" style="margin-top:10px;" placeholder="输入摄像头名称"/>
+			<p style="font-size:14px; color:#bcbcbc; margin:20px 4px;">提示：输入的摄像头名称不能超过20个字符或6个汉字</p>
+			<div style="padding:0 10px;margin-top:20px;"> <div id="scanQR" class="btn-orange" >扫描摄像头二维码</div></div>
+			<div style="padding:0 10px;margin-top:20px;"> <div id="addCameraQR" class="btn-orange " >绑定</div></div>
+		</div>
+	</div>
+</body>
+<script>
+	var ois = new OIS();
+	var dialog = new Dialog();
+	var lastClickTime = new Date().getTime();
+	var lastwifiScanTime; //上次进行无线扫描的时间;
+	var wifiScaning = false; //是否正在进行无线扫描
+	var scanwifiRequest ;//扫描无线的参数
+	var hasScanedCamera = false;
+	var countDownTimer = null;//搜索的倒计时定时器，在停止扫描，或重新开始扫描是要记得清空上次的定时器
+	$(document).ready(function(){
+		$("#rmWifiPs").on("click",function(){
+			var isChecked = $(this).hasClass("icon-Squareokbig");
+			if(isChecked){//选择忘记密码
+				JSBridge.write("lastWifiPs","");
+				JSBridge.write("rememberWifiPs",false);
+				$(this).removeClass("icon-Squareokbig").addClass("icon-Squarebig");
+			}else{
+				JSBridge.write("lastWifi",$("#wifiName").html());
+				JSBridge.write("lastWifiPs",$("#wifiPs").val());
+				JSBridge.write("rememberWifiPs",true);
+				$(this).removeClass("icon-Squarebig").addClass("icon-Squareokbig");
+			}
+		});
+		$("#changepstype").on("click",function(){
+			var type=$(this).attr("pstype");//alert(type);
+			if(type == "ps"){//显示密码
+				$(this).attr("pstype","text");
+				//$(this).removeClass("icon-eye").addClass("icon-eye-grey");
+				$(this).html("隐藏");
+				$("#wifiPs").attr("type","text");
+			}else{
+				$(this).attr("pstype","ps");
+				//$(this).removeClass("icon-eye-grey").addClass("icon-eye");
+				$(this).html("显示");
+				$("#wifiPs").attr("type","password");
+			}
+		});
+		$("#linkAddWifi").on("click",function(){
+			var currentTime = new Date().getTime();
+			if(currentTime - lastClickTime > 500){	
+				lastClickTime = currentTime;
+				jumpPage(2);
+				JSBridge.getssid();
+			}
+		});
+		$("#back2").on("click",function(){
+			if($("#rmWifiPs").hasClass("icon-Squareokbig")){
+				JSBridge.write("lastWifi",$("#wifiName").html());
+				JSBridge.write("lastWifiPs",$("#wifiPs").val());
+				JSBridge.write("rememberWifiPs",true);
+			}
+			$("#wifiPs").val("");//返回清空密码
+			$("#wifiName").html("");
+			jumpPage(1);
+		});
+		$("#back3").on("click",function(){
+			clearInterval(countDownTimer);
+			if(wifiScaning == true){
+				JSBridge.stopscanwifi();
+				wifiScaning = false;
+			}
+			$("#wifiScanlist").html("");
+			$("#cameraBindlist").html("");
+			$("#cameralist").html("");
+			hasScanedCamera = false;
+			jumpPage(2);
+		});
+		//点击二维码扫描
+		$("#scanUseWifi").on("click",function(){
+			var currentTime = new Date().getTime();
+			if(currentTime - lastClickTime > 500){	
+				lastClickTime = currentTime;
+				if($("#rmWifiPs").hasClass("icon-Squareokbig")){
+					JSBridge.write("lastWifi",$("#wifiName").html());
+					JSBridge.write("lastWifiPs",$("#wifiPs").val());
+					JSBridge.write("rememberWifiPs",true);
+				}
+				var wifiName = $("#wifiName").html();
+				var wifiPs = $("#wifiPs").val();
+				if( wifiName ==""){
+					dialog.toast("当前没有可用的Wifi,请连接Wifi,并返回上一步重试");
+				 }/*else if(wifiPs == ""){
+					dialog.toast("请先输入Wifi的密码");
+				} */else{
+					jumpPage(3);
+					$(".level2page").hide();
+					$("#page3_1").show();
+					scanwifiRequest = {
+							"ssid":wifiName,
+							"pwd":wifiPs,
+							"ip":JSBridge.read("ip")
+					}
+					startscanwifi();
+				}
+			}
+		});
+		
+		$("#stopScanWifi1").on("click",function(){//停止扫描。跳转到页面3_2
+			var currentTime = new Date().getTime();
+			if(currentTime - lastClickTime > 500){	
+				clearInterval(countDownTimer);
+				lastClickTime = currentTime;
+				JSBridge.stopscanwifi();
+				wifiScaning = false;
+				$(".level2page").hide();
+				$("#page3_2").show();
+			}
+		});
+		$("#restartScanWifi").on("click",function(){//重新扫描。跳转到页面3_1
+			var currentTime = new Date().getTime();
+			if(currentTime - lastClickTime > 500){	
+				clearInterval(countDownTimer);
+				lastClickTime = currentTime;
+				$(".level2page").hide();
+				$("#page3_1").show();
+				startscanwifi();
+			}
+		});
+		$("#stopScanWifi2").on("click",function(){//停止扫描。跳转到页面3_4
+			var currentTime = new Date().getTime();
+			if(currentTime - lastClickTime > 500){	
+				clearInterval(countDownTimer);
+				lastClickTime = currentTime;
+				JSBridge.stopscanwifi();
+				wifiScaning = false;
+				$(".level2page").hide();
+				$("#page3_4").show();
+				$("#cameraBindlist").html($("#wifiScanlist").html());
+				$("#cameraBindlist li").each(function(i,item){
+					$(this).append('<span class="icon-ok icon-lg text-orange pull-right"></span>');
+					var $thisCheckIcon = $(this).find("span");
+					$(this).on("click",function(){
+						if($thisCheckIcon.hasClass("icon-ok") ==true){
+							$thisCheckIcon.removeClass("icon-ok").addClass("icon-ciycle");
+						}else{
+							$thisCheckIcon.removeClass("icon-ciycle").addClass("icon-ok");
+						}
+					});
+				});
+			}
+		});
+		$("#bindCameralist").on("click",function(){
+			var currentTime = new Date().getTime();
+			if(currentTime - lastClickTime > 500){	
+				//dialog.show("正在绑定摄像头");
+				lastClickTime = currentTime;
+				var checknum = 0;
+				$("#cameraBindlist li").each(function(i,item){
+					var $thisCheckIcon = $(this).find("span");
+					if($thisCheckIcon.hasClass("icon-ok") ==true){//发送绑定请求
+						checknum++;
+						var cameraID = $(this).find("div").eq(0).html();
+						ois.bind(cameraID,function(code,data){
+							
+						},function(code){
+							var info;
+							if(code == 621){
+								info = "摄像头被禁用";
+							}else if(code == 670){
+								info = "摄像头已绑定用户";
+							}else {
+								info = "摄像头绑定失败";
+							}
+							swal(
+									{title:"",    
+									 text: cameraID +info,    
+									 confirmButtonColor: " #f56931",  
+									 confirmButtonText: "确定",  
+									 closeOnConfirm: true ,
+									 animation:false}
+									 );
+						})
+					}
+				});
+				if(checknum == 0){
+					dialog.toast("请选择摄像头进行绑定");
+				}else{
+					setTimeout(function(){
+						$("#cameralist").html($("#wifiScanlist").html());
+						$(".level2page").hide();
+						$("#page3_5").show();
+					},10)
+				}
+				
+			}
+		});
+		$("#complete").on("click",function(){
+			var currentTime = new Date().getTime();
+			if(currentTime - lastClickTime > 500){	
+				lastClickTime = currentTime;
+				jumpPage(0);
+			}
+		});
+		$("#linkScanQR").on("click",function(){
+			var currentTime = new Date().getTime();
+			if(currentTime - lastClickTime > 500){	
+				lastClickTime = currentTime;
+				//JSBridge.scanqr();
+				jumpPage(5);
+			}
+		});
+		$("#scanQR").on("click",function(){
+			var currentTime = new Date().getTime();
+			if(currentTime - lastClickTime > 500){	
+				lastClickTime = currentTime;
+				//$("#cameraQRNum").html("");//重新扫描二维码时，清空上次的cameraID
+				JSBridge.scanqr();
+			}
+		});
+		$("#addCameraQR").on("click",function(){
+			var currentTime = new Date().getTime();
+			if(currentTime - lastClickTime > 500){	
+				lastClickTime = currentTime;
+				addCameraQR();
+			}
+			
+		});
+	});
+//监听
+	$(document).on("back",function(){//判断当前页面是在哪个页面
+		if($("#page1").is(':visible')){
+			$("#back1").trigger("click");
+		}else if($("#page2").is(':visible')){
+			$("#back2").trigger("click");
+		}else if($("#page3").is(':visible')){
+			$("#back3").trigger("click");
+		}else if($("#page5").is(':visible')){
+			$("#back5").trigger("click");
+		}
+	});
+	$(document).on("ssidresult", function(event, data){ 
+		var res = JSON.parse(data);
+		if(res.ssid =="" || res.ip == ""){
+			$("#wifiName").html("");
+			
+		}else{
+			JSBridge.write("ip",res.ip);
+			var wifiName = res.ssid;
+			var lastWifi = JSBridge.read("lastWifi");//alert("上次的无线"+lastWifi);
+			$("#wifiName").html(wifiName);
+			$("#wifiName1").html(wifiName);
+			if(lastWifi == wifiName){
+				if(JSBridge.read("rememberWifiPs") != "false"){
+					var lastWifiPs = JSBridge.read("lastWifiPs");
+					$("#wifiPs").val(lastWifiPs);
+					$("#rmWifiPs").removeClass("icon-Squarebig").addClass("icon-Squareokbig");
+				}else{
+					$("#rmWifiPs").removeClass("icon-Squareokbig").addClass("icon-Squarebig");
+				}
+				
+			}
+		}
+	});
+	/* 
+	setTimeout(function(){
+		$(document).trigger("ssidresult",'{"ssid":"ts", "ip":"s"}')
+	},2000)   */   
+//监听wifi扫描结果
+	$(document).on("scanwifiresult", function(event, data){ 
+		var res = JSON.parse(data);
+		if(res.cameraid != ""){
+			if(hasScanedCamera == false){
+				$(".level2page").hide();
+				$("#page3_3").show();
+				hasScanedCamera = true;
+			}
+			$("#wifiScanlist").append(buildCameraInfo(res.cameraid));
+		}else{
+			//alert("wifiscanresult is null")
+		}	
+	});
+  /* 	setTimeout(function(){
+		$(document).trigger("scanwifiresult",'{"cameraid":"8140-01D4-13141231"}');
+	},6000)   */
+//监听二维码扫描结果
+	$(document).on("scanqrresult", function(event, data){ 
+		var res = JSON.parse(data);
+		if(res.cameraid != ""){
+			jumpPage(5);
+			$("#cameraQRNum").val(res.cameraid);
+		}else{
+			$("#cameraQRNum").val();
+			dialog.toast("二维码扫描失败！")
+		}	
+	});
+
+	 /*  setTimeout(function(){
+		$(document).trigger("scanqrresult",'{"cameraid":"8140-01D4-13141231"}');
+	},6000)    */
+
+	function startscanwifi(){
+		JSBridge.startscanwifi(JSON.stringify(scanwifiRequest));
+		wifiScaning = true;
+		var mywifiScanTime = new Date().getTime();//记录本次开始扫描的时间
+		lastwifiScanTime = mywifiScanTime;
+		//超时处理
+		var time = 90;
+		$("#countDown").html(time);	
+		 countDownTimer = setInterval(function(){
+			$("#countDown").html(--time);			
+			if(time == 0) {
+				clearInterval(countDownTimer);
+				if(lastwifiScanTime == mywifiScanTime && wifiScaning == true){
+					JSBridge.stopscanwifi();
+					wifiScaning = false;
+					if(hasScanedCamera == true){//扫描到摄像头
+						$(".level2page").hide();
+						$("#page3_4").show();
+						$("#cameraBindlist").html($("#wifiScanlist").html());
+						$("#cameraBindlist li").each(function(i,item){
+							$(this).append('<span class="icon-ok icon-lg text-orange pull-right"></span>');
+							var $thisCheckIcon = $(this).find("span");
+							$(this).on("click",function(){
+								if($thisCheckIcon.hasClass("icon-ok") ==true){
+									$thisCheckIcon.removeClass("icon-ok").addClass("icon-ciycle");
+								}else{
+									$thisCheckIcon.removeClass("icon-ciycle").addClass("icon-ok");
+								}
+							});
+						});
+					}else{//未扫描到
+						$(".level2page").hide();
+						$("#page3_2").show();
+					}
+				}
+			}
+		},1000);
+		//超时处理结束
+	}
+	function addCameraQR(){
+		var cameraID= $("#cameraQRNum").val();
+		var val = $("#cameraNameQR").val();
+		if(cameraID == "" || cameraID == "摄像头序列号"){
+			dialog.toast("请先扫描二维码获取摄像头序列号");
+		}else if( isNull(val) ){
+			dialog.toast("请输入摄像头的名称");
+		}else if(getBlen(val)>20){
+			dialog.toast("摄像头名称过长");
+		}else{
+			ois.bind(cameraID,function(code,data){
+				var request ={
+						"camera_id": cameraID,
+						"camera_name": val
+					}
+				ois.setCameraName(request,function(code,data){
+					dialog.toast("添加摄像头成功");
+					//添加成功，返回主页面
+					setTimeout(function(){
+						jumpPage(0);
+					},500);
+				},function(code){
+					dialog.toast("摄像头绑定成功，设定摄像头名称失败");
+				});
+			},function(code){
+				if(code == 621){
+					info = "摄像头被禁用";
+				}else if(code == 670){
+					info = "摄像头已绑定用户";
+				}else {
+					info = "摄像头绑定失败";
+				}
+				dialog.toast(info);
+			})
+		}
+	}
+	function buildCameraInfo(cameraID){
+		var info = [];
+		info.push('<li class="list-group-item clearfix wifiScanlist-item" >');
+		info.push('<div class="pull-left">');
+		info.push(cameraID);
+		info.push('</div>');
+		//info.push('<span class="icon-ciycle icon-lg pull-right"></span></li>');
+		info.push('</li>');
+		return info.join("");
+	}
+	function jumpPage(idx){
+		if(idx == 0){
+			window.location.href = "./main.html";
+		}
+		$(".page").hide();
+		$("#page"+idx).show();
+	}
+
+	//检测一个字符串是否为空，或者是全部是空格
+	function isNull( str ){ 
+		if ( str == "" ) return true; 
+		var regu = "^[ ]+$"; 
+		var re = new RegExp(regu); 
+		return re.test(str); 
+	} 
+	//计算字符串的字符数
+	function getBlen(str) {  
+	   if (str == null) return 0;  
+	   if (typeof str != "string"){  
+	       str += "";  
+    	}  
+	    return str.replace(/[^\x00-\xff]/g,"***").length;  
+	}  
+
+</script>
+</html>

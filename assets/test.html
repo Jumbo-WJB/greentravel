@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimum-scale=1.0, maximum-scale=1.0">
+
+<title></title>
+
+<link href="css/common.css" rel="stylesheet" type="text/css">
+<link href="css/scroll.css" rel="stylesheet" type="text/css">
+<link href="font-awesome-4.1.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+<script type="text/javascript" src="js/iscroll-probe.js"></script>
+<script type="text/javascript" src="js/jquery-1.11.2.min.js"></script>
+<script type="text/javascript" src="js/ois.js"></script>
+<script type="text/javascript" src="js/jsbridge.js"></script>
+<script type="text/javascript" src="js/pulldownup.js"></script>
+<script type="text/javascript" src="js/dialog.js"></script>
+<script type="text/javascript">
+var ois = new OIS();
+var pulldownup = null;;
+var dialog = new Dialog();
+/**
+ * 构建摄像头html
+ *@id  摄像头ID
+ *@name 摄像头名称
+ *@status 状态 ：-1,standby; 0,offline; 1, online; 2,disable
+ */
+function buildInfo(id, name, status, thumb){
+	var html = [];
+	
+	
+	html.push('<div class="item" id="' + id + '">')
+	
+	if(status == 1){		
+		html.push('<div class="img">')
+		html.push('<img src="' + thumb + '">')
+		html.push('</div>')
+		html.push('<div class="live online"></div>')
+	}else{
+		
+		html.push('<div class="img offline">')
+		html.push('<div><i class="fa fa-camera"></i></div>');				
+		html.push('</div>')
+		html.push('<div class="live"></div>')
+	}
+	html.push('<div class="label">' + name + '</div>')		
+	html.push('</div>')	
+	
+	return html.join('');
+}
+
+function updatelist(onchange){
+	//TODO 获取报警统计
+	
+	
+	var userid = JSBridge.get("currentUser");
+	console.log("prepare updatelist" + userid);
+	ois.getCamera(
+		userid,
+		function(code, data){
+			
+			//alert(JSON.stringify(data));
+			var list = data.list;
+			var output = [];
+			for(var i = 0; i < list.length; i++){
+				var item = list[i];
+				output.push(buildInfo(item.base.camera_id, item.base.name, item.base.status, ois.server + "/C" + item.base.camera_id + "/thumb.jpg"))
+				//output.push(item.base.status)
+			}
+			$('#camera_list').html(output.join(""));
+			
+			$('.item').off('click');
+			$('.item').on('click', function(){
+				window.location = "message_detail.html?id=" + $(this).attr("id")
+			});
+			
+			if(onchange) onchange(true);
+		},
+		function(code){
+			//alert("error")
+			if(onchange) onchange(false);
+		}
+	)
+}
+document.addEventListener('touchmove', function (e) { e.preventDefault(); }, false);
+
+
+function parseDate(input, format) {
+  format = format || 'yyyy-mm-dd'; // default format
+  var parts = input.match(/(\d+)/g), 
+      i = 0, fmt = {};
+  // extract date-part indexes from the format
+  format.replace(/(yyyy|dd|mm)/g, function(part) { fmt[part] = i++; });
+
+  return new Date(parts[fmt['yyyy']], parts[fmt['mm']]-1, parts[fmt['dd']]);
+}
+$(function(){	
+	$('.header').off('click');
+	$('.header').on('click', function(){
+		console.log("abc")
+	});
+	return;
+	var currentDate = "2015-09-16"	
+	var dateary = /(\d{4})-(\d{2})-(\d{2})\s(\d{2}):\d{2}:\d{2}/.exec(currentDate + " 00:00:00")
+	
+	start = new Date(parseInt(dateary[1]), parseInt(dateary[2]),  parseInt(dateary[3]), 23, 59, 59);
+	alert(start )
+				end   = new Date(parseInt("1442392585")*1000);
+				second = (end.getTime() -start.getTime()) / 1000;
+	alert(second)
+	return;
+				
+				//second = getRandomRange(50,400);
+				width = parseInt(second * pix_persecond);
+				
+})
+
+</script>
+
+<style type="text/css">
+
+
+.item{
+	padding:4px;	
+	border-radius:2px;			
+	padding-bottom:15px;
+	position:relative;		
+	
+}
+.item > .label{
+	position:absolute;
+	top:15px;
+	left:16px;
+	font-size:16px;
+	color:white;
+	font-weight:bold;	
+}
+.item > .live{
+	position:absolute;
+	right:15px;
+	top:15px;
+	width:35px;
+	padding-left:5px;
+	font-size:12px;
+	font-weight:bold;		
+	border-radius:3px;	
+	background-color:gray;
+	color:white;
+}
+.online{
+	background-color:#0099FF;
+	color:white;
+}
+
+.item > .img{
+	width:100%;
+	height:240px;			
+	border-radius:5px;
+	position:relative;
+	border:1px solid #DDDDDD;
+	text-align:center;
+}
+
+.offline{
+	background-color:#DDDDDD;
+}
+
+.img >img{
+	width:100%;
+	height:100%;		
+}
+
+.img >div{
+	position:absolute;
+	left:0px;
+	right:0px;
+	display:inline-block;
+	bottom:60px;	
+	text-align:center;
+	font-size:40px;	
+	color:gray;
+}
+
+#info{
+	text-align:center;
+	margin:5px;
+	font-size:14px;
+	color:gray;
+}
+#info i{
+	
+	font-size:16px;
+	color:#0066FF;
+}
+
+a:link,a:visited,a:hover{
+	color:white;
+	text-decoration:none; 
+	
+}
+.del{
+	
+	position:absolute;
+	right:7px;	
+	top:8px;
+	padding-top:5px;	
+	font-size:14px;	
+	color:white;
+}
+
+</style>
+</head>
+<body>
+
+<div class="header">
+	<div>消息中心</div>
+</div><!-- /header -->
+
+
+<div id="wrapper">
+	<div id="scroller">	
+		
+	</div>
+</div>
+
+<div class="footer">
+	<div >
+	<i  onclick="window.location='main.html'"  class="fa fa-flag"></i><br>
+	我的随看
+	</div>
+	<div class="sel" _onclick="window.location='message.html'">
+	<i class="fa fa-warning"></i><br>
+	消息中心
+	</div>
+	<div  onclick="window.location='center.html'">
+	<i  class="fa fa-user"></i><br>
+	个人中心
+	</div>
+</div><!-- /footer -->
+
+ 
+
+</body>
+</html>

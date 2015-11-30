@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimum-scale=1.0, maximum-scale=1.0">
+<title>摄像头设置</title>
+
+<link rel="stylesheet" href="font-awesome-4.1.0/css/font-awesome.min.css"/>
+<link rel="stylesheet" href="css/bootstrap.min.css" />
+<link rel="stylesheet" href="sw/style.css" >
+<link rel="stylesheet" href="css/common.css" />
+<script type="text/javascript" src="js/jquery-1.11.2.min.js"></script>
+<script type="text/javascript" src="js/jsbridge.js"></script>
+<script type="text/javascript" src="js/ois.js"></script>
+<script type="text/javascript" src="js/dialog.js"></script>
+</head>
+<body>
+	<div class="header">
+		<div>
+			<div class="back" id="backTopc"><span class="icon-back"></span></div>
+			<div id="settingTitle" class="title">摄像头名称设置</div>
+		</div>
+	</div>
+	<div id="wrapper" style="bottom: 0px;">
+		<div id="scroller">
+			<div class="content">
+				<input type="text" class="form-control " id="name"/>
+				<p style="font-size:14px; color:#bcbcbc; margin:20px 4px;">提示：输入的摄像头名称不能超过20个字符或6个汉字</p>
+				<button class="btn-orange" style="margin-top:40px;">确定</button>
+			</div>
+		</div>
+	</div>
+</body>
+<script>
+	var myScroll;
+	var ois = new OIS();
+	var dialog = new Dialog();
+	var userID = JSBridge.get("currentUser");
+	var cameraInfo = JSON.parse(localStorage.getItem("currentCamera")); 
+	var cameraID = cameraInfo.base.camera_id;
+	var name = cameraInfo.base.name;
+	var lastClickTime = new Date().getTime();
+	$(document).ready(
+		function() {
+			init();
+			$("button").on("click",function(){
+				var currentTime = new Date().getTime();
+				if(currentTime - lastClickTime > 500){	
+					lastClickTime = currentTime;
+					name = $("#name").val();
+					if(isNull(name)){
+						dialog.toast("摄像头名称不能为空");
+					}else if(getBlen(name)>20){
+						dialog.toast("摄像头名称过长");
+					}else{
+						var request = {"camera_id":cameraID,"camera_name":name};
+						dialog.show("设置中");
+						ois.setCameraName(request,function(code, data){
+								cameraInfo.base.name = name;
+								localStorage.setItem("currentCamera", JSON.stringify(cameraInfo));
+								dialog.hide();
+								dialog.toast("设置成功");
+								setTimeout(function(){
+									window.location.href="./cameraSetting.html?cameraid="+cameraID;
+								},500);
+						}, function(code){
+							dialog.hide();
+							dialog.toast("设置失败");
+						});
+					}		
+				}				
+			});
+			$("#backTopc").on("click", function() {
+				window.location.href="./cameraSetting.html?cameraid="+cameraID;
+			});
+		});
+	$(document).on("back",function(){
+		$("#backTopc").trigger("click");
+	});
+	function init(){
+		$("#name").val(name);
+	}
+	//检测一个字符串是否为空，或者是全部是空格
+	function isNull( str ){ 
+		if ( str == "" ) return true; 
+		var regu = "^[ ]+$"; 
+		var re = new RegExp(regu); 
+		return re.test(str); 
+	} 
+	//计算字符串的字符数
+	function getBlen(str) {  
+	   if (str == null) return 0;  
+	   if (typeof str != "string"){  
+	       str += "";  
+    	}  
+	    return str.replace(/[^\x00-\xff]/g,"***").length;  
+	}  
+
+</script>
+</html>

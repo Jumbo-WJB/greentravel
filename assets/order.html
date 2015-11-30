@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+	
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimum-scale=1.0, maximum-scale=1.0">
+	<title>订购</title>
+	<link href="sw/style.css" rel="stylesheet" type="text/css">
+	<link href="font-awesome-4.1.0/css/font-awesome.min.css" rel="stylesheet" type="text/css"/>
+	<link rel="stylesheet" href="css/bootstrap.min.css"/>
+	<link rel="stylesheet" href="css/sweetalert.css">
+	<link href="css/scroll.css" rel="stylesheet" type="text/css">
+	<link rel="stylesheet" href="css/common.css"/>
+	<style type="text/css">
+		html, body{
+			font-size: 16px;
+			color: #000000;
+		}
+		.myPanel{
+			padding: 10px;
+		}
+		.bgPanel{
+			background: #f0f0f0;
+		}
+		.sweet-alert h2 {
+			font-size:18px;
+		 }
+		.sweet-alert p {
+			font-size:16px;
+		} 
+		.line{
+			padding: 5px 0px 5px 0px;
+		}
+
+	</style>
+	
+</head>
+<body>
+
+
+	<div>
+		
+		<!--顶部-->
+		<div class="header">
+			<div>
+				<div class="back" id="backTopc"><span class="icon-back"></span></div>
+				<div id="settingTitle" class="title">订购</div>
+			</div>
+		</div>
+
+		<div id="wrapper" style="bottom: 0px;">
+			<div id="scroller">
+				
+				<!--选择产品包-->
+				<div id="servicePanel" class="myPanel bgPanel"> 
+
+				</div>
+
+				<!--购买数量-->
+				<div class="myPanel">
+
+					<div style="float:left; line-height:50px;">
+						购买数量&nbsp;<input type="text" name="orderNum" style="width:50px;height:25px;border: 1px solid #999999;line-height:normal;" value="1" maxlength="3" oninput="loadOrder()"/>
+					</div>
+					
+					<div style="float:right;text-align:right;">
+						<div style="font-size:13px;color:#666666;text-decoration:line-through;">￥<span id="price">0.0</span></div>
+						<div style="font-weight:bolder;">￥<span id="discountPrice">0.0</span></div>
+						<div>x<span id="showOrderNum">1</span></div>
+					</div>
+					<div style="float:right; line-height:50px;margin-right:5px;">
+						<span style="background:red;color:#fff;padding:5px;border-radius: 8px;font-size:13px;">优惠价</span>
+						
+					</div>
+
+
+				</div>
+
+				<!--摄像头列表-->
+				<div id="cameraPanel" class="myPanel bgPanel" style="clear:both;"> 
+					
+					
+				</div>
+
+				<!--结算-->
+				<div class="myPanel billPanel">
+					<div style="text-align:right">
+						
+						(优惠)￥<span id="totalDiscountPrice">0.0</span>
+					</div>
+					<div>
+						<div class="line" style="display: inline-block;width:50%;">
+							商品数量：<span id="orderTotal" style="color:red;">1</span>
+						</div>
+						<div class="line" style="display: inline-block;color:red;">
+							总计:<span style="font-weight:bolder;">￥<span id="totalPrice">0.00</span></span>
+						</div>
+
+					</div>
+
+				</div>
+				<div class="myPanel">
+					<div ontouchend="paySubmit()" class="btn-orange" >提交订单</div>
+				</div>
+
+				
+				
+			</div>
+
+		</div>
+
+		
+
+
+	</div>
+
+	
+	
+
+
+	<script type="text/javascript" src="js/iscroll-probe.js"></script>
+	<script type="text/javascript" src="js/jquery-1.11.2.min.js"></script>
+	<script type="text/javascript" src="js/sweetalert-dev.js"></script>
+	<script type="text/javascript" src="js/jsbridge.js"></script>
+	<script type="text/javascript" src="js/ois.js"></script>
+	<script type="text/javascript" src="js/dialog.js"></script>
+
+
+
+
+	<script type="text/javascript">
+
+
+		var services= [];
+		var curService= null;
+		var cameraIds= [];
+		var cameraId= "";  //指定为哪个摄像头购买产品包 默认是 摄像头列表的第一个
+		var ois = new OIS();
+		var dialog = new Dialog();
+		var userID = JSBridge.get("currentUser");
+		var token= JSBridge.get("token");
+		//dialog.toast("--token--"+token)
+		var myScroll= null;
+		document.addEventListener('touchmove', function (e) { e.preventDefault(); }, false);
+		document.onselectstart = function() { return false; }
+
+
+		/*function allowFormsInIscroll(){
+ 			$('input').each(function(i, el){
+ 				el.addEventListener(('ontouchstart' in window)?'touchstart':'mousedown', function(e){
+ 					e.stopPropagation();
+ 
+ 				})
+		 	});
+		 }
+ document.addEventListener('DOMContentLoaded', allowFormsInIscroll, false);*/
+		$(document).ready(function () {
+			myScroll = new IScroll('#wrapper',{disableMouse: true, disablePointer: true});
+			//myScroll = new IScroll('#wrapper',{ mouseWheel: true ,click:true, probeType:1, bounce:true});
+			dialog.show("加载中");
+			setTimeout(function(){
+				loadService();
+				loadCamera();
+			}, 100)
+
+			$("#backTopc").on("click", function(){
+
+				swal({   
+					 title: "确定退出订购吗?",   
+					 text: "",   
+					 showCancelButton: true,  
+					 confirmButtonColor: "#f56931",  
+					 confirmButtonText: "确定",  
+					 cancelButtonText: "取消",  
+					 closeOnConfirm: true ,					 
+					 animation:false
+					 }, 
+					 function(){ 
+						 window.location.href="./center.html";
+					} );
+			});
+			
+			
+		});
+		$(document).on("back",function(){
+			$("#backTopc").trigger("click");
+		});
+		
+
+		//获取产品包列表
+		function loadService(){
+
+			ois.getService(function(code, data){
+
+        		var con= [];
+        		if(data && data.length> 0){
+
+        			services= data;
+        			$.each(services, function(i, service){
+        				// for(var i= 0; i< 10; i++){
+        				con.push('<div class="line">');
+        				con.push(service.service_name);
+        				if(i== 0){
+        					con.push('<input value="'+service.service_id+'" type="radio" name="service" style="float:right;" checked="checked" onChange="changeService()"/>');
+        				}else{
+        					con.push('<input value="'+service.service_id+'" type="radio" name="service" style="float:right;" onChange="changeService()"/>');
+        				}
+        				con.push('</div>');
+        				// }
+        				
+
+        			});
+        		}else{
+        			con.push('<div class="line">暂无产品包</div>')
+        		}
+        		$('#servicePanel').html(con.join(""));
+        		dialog.hide();
+        		setTimeout(function(){
+					 myScroll.refresh();
+				},10);
+				changeService();
+
+			}, function(code){
+				$('#servicePanel').html('<div class="line">暂无产品包</div>');
+        		dialog.hide();
+
+			});
+			
+		}
+
+		//获取摄像头列表
+		function loadCamera(){
+			
+		    ois.getCamera(
+				userID,
+				function(code, data){
+					
+					var list = data.list;
+					var con = [];
+					$.each(list, function(i, camera){
+						con.push('<div class="line">');
+						if(i== 0){
+							con.push('<input id="'+camera.base.camera_id+'" type="radio" name="camera" value="'+camera.base.camera_id+'" checked="checked" onChange="changeCamra()"/>')
+						}else{
+							con.push('<input id="'+camera.base.camera_id+'" type="radio" name="camera" value="'+camera.base.camera_id+'" onChange="changeCamra()"/>')
+						}
+						con.push(camera.base.name)
+						con.push('</div>');
+					});
+					
+					$('#cameraPanel').html(con.join(""));
+					setTimeout(function(){
+						 myScroll.refresh();
+					},10);
+					dialog.hide();
+					changeCamra();
+
+				},
+				function(code){
+					console.log(code);
+					dialog.hide();
+				}
+			)
+		    
+
+			
+
+			
+			
+		}
+		function changeService(){
+			curService= null;
+
+			if(services && services.length> 0){
+				var serviceId= $('input[name="service"]:checked')[0].value;
+				curService= getServiceById(serviceId);
+				
+			}
+			loadOrder();
+		}
+
+		function loadOrder(){
+			if(curService){
+
+				var orderNum= $('input[name="orderNum"]').val();
+				if(orderNum.length== 0 || isNaN(orderNum)){
+					orderNum= 0;
+				}
+				
+				var price= (curService.price).toFixed(2);
+				var discountPrice= (curService.discount_price).toFixed(2);
+
+
+				$("#showOrderNum").html(orderNum);
+				$("#price").html(price);
+				$("#discountPrice").html(discountPrice);
+
+				var cameraLength= cameraIds.length;
+
+				var orderTotal= orderNum*cameraLength;
+				var totalPrice= (orderNum*discountPrice*cameraLength).toFixed(2);
+				var totalDiscountPrice= (orderNum*(price-discountPrice)*cameraLength).toFixed(2);
+
+				$("#orderTotal").html(orderTotal);
+				$("#totalPrice").html(totalPrice);
+				$("#totalDiscountPrice").html(totalDiscountPrice);
+			}
+
+		}
+		function changeCamra(){
+			cameraIds= [];
+			$('input[name="camera"]:checked').each(function(i, item){
+				cameraIds.push($(item).val());
+			});
+			loadOrder();
+		}
+
+		function getServiceById(serviceId){
+			if(services && services.length> 0){
+				for(var i= 0, n= services.length; i< n; i++){
+					if(serviceId== services[i].service_id){
+						return services[i];
+					}
+
+				}
+			}
+			return null;
+		}
+
+		//提交订单
+		function paySubmit(){
+
+			$('input[name="orderNum"]').blur(); 
+			var showOrderNum= $("#showOrderNum").html()*1;
+			// if(curService!= null && cameraIds.length> 0 && showOrderNum> 0){
+			if($("#totalPrice").html()*1){
+				dialog.show("提交中");
+				var serviceId= curService.service_id;
+				var cameraId= cameraIds[0];
+
+				/* $.ajax({
+					url       : ois.server + "/ois/waptenpay/buy?user="+userID+"&sid="+serviceId+"&quantity="+showOrderNum+"&cameraid="+cameraId+"&token="+token, 
+					type      : "GET",				
+					timeout   : 5000,				
+					dataType  : "json",				
+					
+					complete   : function(jqXHR, TS){														
+						console.log(jqXHR.status+"---"+jqXHR.getResponseHeader("Location"))			
+						if(jqXHR.status== 302){
+							var payUrl= jqXHR.getResponseHeader("Location");
+							console.log("--payUrl--"+payUrl)
+							JSBridge.upgrade(payUrl); //浏览器打开付费地址
+						}
+						payReturnCode(jqXHR.status);
+					}			
+				})	 */ 
+				
+				ois.getPayUrl(userID, serviceId, showOrderNum, cameraId, token, function(code, data){
+					
+					
+					var payUrl= data.location;
+					console.log("--payUrl--"+payUrl)
+					JSBridge.upgrade(payUrl); //浏览器打开付费地址 */
+					
+					
+					setTimeout(function(){
+						swal({   
+							title: "登录财付通付款",    
+							text: "",   
+							type: "success",   
+							showCancelButton: true, 
+							cancelButtonText: "付款失败",
+							confirmButtonColor: "#DD6B55",   
+							confirmButtonText: "付款成功,查看记录",
+							closeOnConfirm: false,   
+							closeOnCancel: false,
+							
+						}, function(isConfirm){ 
+							swal.close();
+							var cameraId= cameraIds[0];
+							//RMSys.refreshArrearage(cameraId); //付款后 重新查一遍 摄像头 是否欠费
+							if(isConfirm){ //选择支付成功
+								window.location.href= "./consumeDetail.html";
+							}
+						});
+					}, 200);
+					dialog.hide();
+					
+				}, function(code){
+					dialog.hide();
+					dialog.toast(ois.getinfoBycode(code));
+				}); 
+				
+				
+
+			}else{
+				dialog.toast("金额为0，无法支付");
+			}
+
+		}
+		/* //获取财付通重新定地址 结果
+		function payReturnCode(code){
+
+
+
+
+			dialog.hide();
+			if(code== 302){ //获取重定向地址成功
+				
+
+			}else if(code== 662){
+				dialog.toast('token超时,请重新登录后购买');
+			}else if(code== 663){
+				dialog.toast('产品包无效');
+			}else if(code== 664){
+				dialog.toast('价格无效');
+			}else if(code== 666){
+				dialog.toast('订单异常');
+			}else if(code== -1){
+				dialog.toast('提交失败,请检查网络是否正常');
+			}else{
+				dialog.toast('其他错误, code='+code);
+			}
+		} */
+
+		/*//回退
+		function back(){
+			var result= confirm("确定要退出订购吗");
+			if(result== true){
+				
+				RMSys.back(sourceView);
+			}
+		}*/
+
+		
+		/*function setParam(param){
+
+			if(param){
+				param= $.parseJSON(param);
+				sourceView= param.hasOwnProperty('sourceView') ? param.sourceView*1: -1;
+				cameraId= param.hasOwnProperty('cameraId') ? param.cameraId: "";
+				if(cameraId){
+
+					var time= 0;
+					var interval= setInterval(function(){
+				    	RMLog.debug("cameraId："+cameraId); 
+				    	if($('#cameraPanel').html().length> 0 || time> 5000){ //如果 摄像头div已经加载完毕
+				    		clearInterval(interval);
+							$('#camera_'+cameraId).attr("checked", "checked"); 
+							changeCamra();
+						}
+						time+= 200;
+				    }, 200);
+
+				}
+			}
+
+		}*/
+
+	</script>
+
+</body>
+
+
+
+</html>

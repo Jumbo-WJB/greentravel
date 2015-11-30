@@ -1,0 +1,172 @@
+
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimum-scale=1.0, maximum-scale=1.0">
+
+<title>iScroll demo: simple</title>
+<!-- 新 Bootstrap 核心 CSS 文件 -->
+<link rel="stylesheet" href="css/bootstrap.min.css">
+<!-- 可选的Bootstrap主题文件（一般不用引入） -->
+<link rel="stylesheet" href="css/bootstrap-theme.min.css">
+<link href="font-awesome-4.1.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+<link href="css/metro-bootstrap.min.css" rel="stylesheet" type="text/css">
+<link href="css/common.css" rel="stylesheet" type="text/css">
+
+<script type="text/javascript" src="js/jquery-1.11.2.min.js"></script>
+<!-- 最新的 Bootstrap 核心 JavaScript 文件 -->
+<script src="js/bootstrap.min.js"></script>
+<script src="js/dialog.js"></script>
+<script src="js/ois.js"></script>
+
+<style>
+	
+	
+</style>
+<script>
+	var ois = new OIS();
+	var dialog = new Dialog();
+	
+	
+	function regist(){
+		//		
+		var request = 
+		{
+			
+			phone   : "13501244501"
+		}
+		
+		request.user = $("#user").val();
+		request.password = $("#password").val();		
+		//alert(JSON.stringify(request))
+		//$.support.cors = true;
+		if(request.user == '' || request.password == ''){
+			dialog.toast("用户名/口令不能为空!")			
+			return;
+		}
+		
+		dialog.show(); 		
+		
+		ois.regist(
+			request,
+			function(code, data){
+				
+				dialog.hide();
+				window.location = "login.html"
+			}, 
+			function(code){
+				showinfoBycode(code);
+				dialog.hide();				
+		})
+		
+		
+	}
+	var timedown = function(jqObj){
+		var time = 60;
+		var mHanler = setInterval(function(){
+			jqObj.text(time--)			
+			if(time == 0) {
+				clearInterval(mHanler);
+				jsObj.attr('disabled', false); 
+			}
+		}, 1000);
+		
+	}
+	
+	function showinfoBycode(code){
+		if(code == 0)
+			dialog.toast("网络异常，请检查!")
+		else if (code == 606)
+			dialog.toast("此手机号无效，请检查!")
+		else if(code = 603)
+			dialog.toast("用户已被占用，请检查")
+		else
+			dialog.toast("发生错误，请检查!")
+			
+	}
+	$(function(){		
+		$('#btnAuthcode').on('click', function(event){				
+			event.preventDefault();			
+			var phone = $("#user").val();
+			if(!/^\d{11,11}/.test(phone)){			 
+				dialog.toast("请填写正确的手机号");				
+				return;
+			}		
+			$(this).attr('disabled', true); 
+			dialog.show();
+			ois.getAuthcode(
+			
+				phone,				
+				function(code, data){
+					$(this).attr('disabled', false); 
+					timedown($(this));
+					dialog.hide();				
+				}, 
+				function(code){
+					showinfoBycode(code)						
+					dialog.hide();				
+			})
+		});
+	})
+</script>
+<body>
+	
+	<div class="panel  panel-default">
+	  <div class="panel-heading">
+		  <div class="container-fluid" style="padding-left:0px">
+			<div class="row">
+				<div class="col-xs-2"  style="font-size:18px"><a href="index.html"></a></div>
+				<div class="col-xs-9 text-center" style="font-size:16px">用户注册</div>
+			</div>
+		  </div>
+	  </div>
+	  
+	  <div class="panel-body">	  
+		
+		<div id="msg" style="color:#990033;display:none;font-size:14px;margin-bottom:10px">
+			<i class="fa fa-exclamation-triangle"></i><span></span>
+		</div>
+		<form class="form-inline">
+		  <div class="form-group">  
+			<div class="input-group">
+			  <div class="input-group-addon"><i class="fa fa-user"></i></div>
+			  <input type="text" class="form-control" id="user" placeholder="手机号">      
+			</div>
+		  </div>
+		  <div class="form-group">  
+			<div class="input-group">
+			  <div class="input-group-addon"><i class="fa fa-bars"></i></div>
+			  <input type="password" class="form-control" id="password" placeholder="6-14位，建议字母数字组合">      
+			</div>
+		  </div>			  
+		  <div class="form-group">  
+			<div class="input-group">
+			  <div class="input-group-addon"><i class="fa fa-hand-o-right"></i></i></div>
+			  <input type="text" class="form-control" id="exampleInputAmount" placeholder="输入激活码">      
+			  <div class="input-group-addon"><a href="#" id="btnAuthcode">发送激活码</a></div>
+			</div>
+		  </div>			  
+		</form>
+		<div class="container-fluid">
+			
+			<div class="row">
+				<div class="col-md-12"><button style="width:100%" type="button" onclick="regist()" class="btn btn-primary">完成注册</button></div>				
+			</div>
+			
+		</div>
+		
+	  </div>
+	</div>
+
+	<div id="wait" style="position: absolute;left: 0px;top: 0px;width: 100%;height: 100%;display: none;z-index:300">
+		<div style="position: absolute;left: 0px;top: 0px;width: 100%;height: 100%;background: #000000;opacity:0.2">
+		</div>
+		<div style="font-size:48px;position:absolute;top:47%;left:40%">
+			<i class="fa fa-spinner fa-spin"></i>
+		</div>
+		
+	</div>
+</body>
+</html>

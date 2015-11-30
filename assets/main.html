@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimum-scale=1.0, maximum-scale=1.0">
+
+<title>iScroll demo: simple</title>
+
+<link rel="stylesheet" href="css/sweetalert.css">
+<link href="sw/style.css" rel="stylesheet" type="text/css">
+<link href="css/scroll.css" rel="stylesheet" type="text/css">
+<link href="css/common.css" rel="stylesheet" type="text/css">
+<link href="font-awesome-4.1.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+<link rel="stylesheet" href="css/bootstrap.min.css" />
+
+<style type="text/css">
+
+.item{
+	margin:4px;	
+	border-radius:2px;			
+	margin-bottom:15px;
+	position:relative;		
+	
+}
+.item > .label{
+	font-size:16px;
+	color:#fff;
+	font-weight:bold;
+	border-radius:3px;		
+}
+
+.item > .live{
+	padding:2px 8px 3px;
+	font-size:12px;
+	font-weight:bold;		
+	border-radius:3px;	
+	background-color:gray;
+	color:white;
+}
+
+.item > .online{
+	background-color:#f56931;
+	color:white;
+}
+
+.item > .img{		
+	border-radius:5px;
+	position:relative;
+	border:1px solid #DDDDDD;
+	text-align:center;
+}
+.mask-gray { 
+-webkit-filter: grayscale(100%); 
+-moz-filter: grayscale(100%); 
+-ms-filter: grayscale(100%); 
+-o-filter: grayscale(100%); 
+filter: grayscale(100%); 
+filter: gray; 
+} 
+.item  .img .mask{
+	width:100%;
+	height:100%;
+	position:absolute;
+	top:0px;left:0px;
+	background:#ddd;
+	opacity:0.6;
+}
+.item-default .mask-title{
+	height:40px;
+	width:100%;
+	border-radius: 2px;
+	background:rgba(0,0,0,0.3);
+	position:absolute;
+	z-index:2;
+}
+.item-default  .label{
+	position:absolute;
+	top:8px;
+	left:16px;
+	padding: 2px 5px;
+	z-index: 3;
+}
+
+.item-default  .live{
+	position:absolute;
+	right:15px;
+	top:8px;
+	z-index: 3;
+}
+
+.item-default  .img{
+	width:100%;
+	height:240px;			
+}
+
+.offline{
+	background-color:gray;
+}
+
+.img >img{
+	width:100%;
+	height:100%;		
+}
+
+.item-default .console{
+	text-align:center; 
+	border:0;
+	height:30px;
+	border-bottom:1px solid #EEEEEE;
+	border-radius:5px;
+	padding-left:2px;
+	margin-top:5px;	
+	
+}
+.item-default .console > div{
+	display:inline-block;
+	width:33%;
+	height:24px;
+	font-size:16px;
+	color:#888888;
+}	
+.item-default .console .share{
+	text-align:left;
+	padding-left:2px;
+}	
+
+.item-default .console .set{
+	text-align:right;
+	padding-right:2px;
+}	
+
+.console > div > span{		
+	color:#f56931;
+	font-weight:bold;
+}
+.item-list .item{
+	border-bottom:1px solid #EEEEEE;
+	margin:0;
+	padding:5px;
+}
+.item-list .mask-title{
+	display:none;
+}
+.item-list .label{
+	position:absolute;
+	top:8px;
+	left:130px;	
+	color:#333;
+}
+
+.item-list  .live{
+	position:absolute;
+	top:6px;
+	right:20px;
+}
+
+.item-list  .img{
+	display:inline-block;
+	width:108px;
+	height:80px;			
+}
+.item-list .console .share{	
+	position:absolute;
+	left:130px;
+	top:60px;
+	font-size:16px;
+	color:#888888;
+	padding:6px 0;
+}	
+.item-list .console .record{	
+	position:absolute;
+	left:130px;
+	top:30px;
+	font-size:16px;
+	color:#888888;
+	padding:6px 0;
+}	
+.item-list .console .set{	
+	position:absolute;
+	right:20px;
+	top:30px;
+	font-size:16px;
+	color:#888888;
+	padding:6px 0;
+}	
+a:link,a:visited,a:hover{
+	color:white;
+	text-decoration:none; 
+	
+}
+.plus{	
+	position:absolute;
+	right:50px;	
+	top:8px;	
+	padding:5px;
+	font-size:18px;		
+	color:white;
+}
+.menu{
+	position:absolute;
+	right:10px;	
+	top:8px;	
+	text-align:center;
+}
+.menu-item{
+	width:34px;
+	padding:5px;
+}
+.menu .menu-list{
+	color:#333;
+	font-size:14px;
+	text-align:center;
+}
+/*.menu .menu-list li{
+	height:40px;
+	line-height:40px;
+	border-bottom:1px solid #eee;
+} */
+.sweet-alert h2 {
+	font-size:18px;
+}
+.sweet-alert p {
+	font-size:16px;
+} 
+</style>
+<script type="text/javascript" src="js/iscroll-probe.js"></script>
+<script type="text/javascript" src="js/jquery-1.11.2.min.js"></script>
+<script type="text/javascript" src="js/jsbridge.js"></script>
+<script type="text/javascript" src="js/ois.js"></script>
+<script type="text/javascript" src="js/pulldownup.js"></script>
+<script type="text/javascript" src="js/dialog.js"></script>
+<script src="js/sweetalert-dev.js"></script>
+<script type="text/javascript" src="js/bootstrap.min.js"></script>
+<script type="text/javascript">
+/**
+ * 
+ */
+
+var ois = new OIS();
+var pulldownup = null;;
+var dialog = new Dialog();
+
+var lastClickTime = 0;
+var shareScroll = null;
+var mainlist = getQueryStr("mainlist");
+
+/**
+ * 构建摄像头html
+ *@id  摄像头ID
+ *@name 摄像头名称
+ *@status 状态 ：-1,standby; 0,offline; 1, online; 2,disable
+ */
+function buildInfo(id, name, status, share, thumb){
+	var html = [];
+	
+	html.push('<div class="item ">')
+	html.push('<div class="mask-title"></div>')
+	
+	if(status == 1){		
+		html.push('<div class="img" playable deviceid="' + id + '" cameraname="' + name + '">')
+		html.push('<img src="' + thumb + '">')
+		html.push('</div>')
+		html.push('<div class="live online">在线</div>')
+	}else if(status == 0){
+		
+		html.push('<div class="img offline mask-gray" deviceid="' + id + '">')
+		html.push('<img src="' + thumb + '">')				
+		html.push('</div>')
+		html.push('<div class="live">离线</div>')
+	}else if(status == -1){
+		
+		html.push('<div class="img offline mask-gray" deviceid="' + id + '">')
+		html.push('<img src="' + thumb + '">')				
+		html.push('</div>')
+		html.push('<div class="live">关机</div>')
+	}
+	html.push('<div class="label">' + name + '</div>')
+	
+	html.push('<div class="console">')
+	if(share == 0){//摄像头未分享
+		html.push('<div deviceid="' + id + '" class="share" shareable><span class="fa fa-share-alt"></span>分享</div>')
+	}else if(share == 1){//私密分享
+		html.push('<div deviceid="' + id + '" class="share" shareable><span class="fa fa-share-alt"></span>私密分享</div>')
+	}
+	html.push('<div deviceid="' + id + '" class="record" cameraname="' + name + '"  recordable><span class="icon-time"></span>回看录像</div>')
+	html.push('<div deviceid="' + id + '" class="set" settable><span class="icon-up"></span>设置</div>')
+	html.push('</div>')
+	html.push('</div>')
+	return html.join('');
+}
+function updatelist(callback){
+	var userid = JSBridge.get("currentUser");
+	console.log("prepare updatelist" + userid);
+	ois.getCamera(
+		userid,
+		function(code, data){
+			
+			//alert(JSON.stringify(data));
+			var list = data.list;
+			var output = [];
+			for(var i = 0; i < list.length; i++){
+				var item = list[i];
+				output.push(buildInfo(item.base.camera_id, item.base.name, item.base.status, item.base.share,ois.server + "/C" + item.base.camera_id + "/thumb.jpg?randomcode=" + new Date().getTime()))
+				//output.push(item.base.status)
+			}
+			
+			$('#camera_list').html(output.join(""));
+			//填充的区域一直保留，是为了页面切换显示模式刷新
+			var fill = $("#wrapper").height() - $("#camera_list").height()			
+			if(fill >0 ) {
+				//$('#camera_list').append('<div style="height:' + (fill+5) + 'px"></div>');
+				$("#fill_area").height(fill+5);
+			}else{
+				$("#fill_area").height(0);
+			}
+			$("#camera_list [playable]").off('click');
+			$("#camera_list [playable]").on('click', function(){			
+				
+				//Adnroid BUG ,trigger twice click
+				//alert("abc")
+				if(new Date().getTime() - lastClickTime < 200)
+					return true;				
+				JSBridge.play(userid, $(this).attr("deviceid"), $(this).attr("cameraname"))
+				lastClickTime = new Date().getTime();
+			});
+			
+			$("#camera_list [recordable]").off('click');
+			$("#camera_list [recordable]").on('click', function(){			
+						
+				JSBridge.play(userid, $(this).attr("deviceid"), $(this).attr("cameraname"), 'vod')
+				lastClickTime = new Date().getTime();
+			});
+			
+			$("#camera_list [settable]").off('click');
+			$("#camera_list [settable]").on('click', function(){			
+				//Adnroid BUG ,trigger twice click
+				//alert("abc")
+				if(new Date().getTime() - lastClickTime < 200)
+					return;				
+				lastClickTime = new Date().getTime();
+				var _setting = "cameraSetting.html?cameraid=" + $(this).attr("deviceid")
+				
+				//alert(_setting)
+				//return;
+				window.location = _setting;
+				
+			});	
+			$("#camera_list [shareable]").off('click');
+			$("#camera_list [shareable]").on('click', function(){			
+				//Adnroid BUG ,trigger twice click
+				//alert("abc")
+				if(new Date().getTime() - lastClickTime < 200)
+					return;				
+				lastClickTime = new Date().getTime();
+				var _share = "share.html?cameraid=" + $(this).attr("deviceid");
+				
+				//alert(_setting)
+				//return;
+				window.location = _share;
+				
+			});	
+			JSBridge.set('cameraList',list);
+			if(JSBridge.terminal_type == 5){//ios特殊是存localStorage,要存json串
+				JSBridge.set('cameraList',JSON.stringify(list));
+			}
+			if(callback) callback("chnage");
+		},
+		function(code){
+			//alert("error")
+			if(callback) callback("nochnage");
+		}
+	)
+}
+
+function upgradeCheck(callback){
+		//升级检测
+	var request = {
+		terminal_type : JSBridge.terminal_type
+	}
+	
+	ois.getVersion(request,function(code, data){	
+		if(data.version != JSBridge.get('app_version') && data.update_level == 1 ){
+			swal(
+					{
+						title: "最新版本："+data.version,
+						text: "更新内容："+data.release_note,
+						showCancelButton: true,
+						confirmButtonColor: "#f56931",
+						confirmButtonText: "升级",
+						cancelButtonText:"取消",
+						closeOnConfirm: false ,
+						animation:false
+					},
+					function(){
+						JSBridge.upgrade(data.upgrade_url);
+						callback(true);
+						return;
+					}
+			);
+		}else if(data.version != JSBridge.get('app_version') && data.update_level == 2 ){
+			swal(
+				{   
+				 title: "最新版本："+data.version,   
+				 text: "更新内容："+data.release_note,   
+				 showCancelButton: false,  
+				 confirmButtonColor: "#f56931",  
+				 confirmButtonText: "升级",  
+				 closeOnConfirm: false ,					 
+				 animation:false
+				 }, 
+				 function(){ 
+					 JSBridge.upgrade(data.upgrade_url);
+					 callback(true);
+					 return;
+					 }
+				 );
+			}
+		callback(false);
+	},function(code){
+		//alert(code)
+		callback(false)
+	})
+}
+
+function loaded () {
+	shareScroll = new IScroll('#wrapper2', { mouseWheel: true ,click:true, probeType:1, bounce:true});
+	var listmode = JSBridge.get("cameralistMode");
+	if(listmode != "list"){
+		$(".back").html('<span class="icon-computer"></span>');
+		$("#camera_list").removeClass("item-list").addClass("item-default");
+		$("#shareCameralist").removeClass("item-list").addClass("item-default");
+	}else{
+		$(".back").html('<span class="icon-menu"></span>');
+		$("#camera_list").removeClass("item-default").addClass("item-list");
+		$("#shareCameralist").removeClass("item-default").addClass("item-list");
+	}
+
+	var time= 0;
+	$(document).on('back', function(){
+		if(new Date().getTime() - time < 2000){
+			JSBridge.finish();	
+		}else{
+			dialog.toast("再按一次退出程序");
+			time= new Date().getTime();
+		}
+		
+		
+		/* swal(
+				{   
+				 title: "提示",   
+				 text: "确定退出?",   
+				 showCancelButton: true,  
+				 confirmButtonColor: "#f56931",  
+				 confirmButtonText: "确定",  
+				 cancelButtonText: "取消",  
+				 closeOnConfirm: true ,					 
+				 animation:false
+				 }, 
+				 function(){ 
+					 JSBridge.finish();					
+					 return;
+					 }
+				 ); */	
+			}	
+	);
+	upgradeCheck(function(upgrade){
+		
+		if(upgrade)
+			return;			
+		
+		//dialog.show("加载中");
+		$("#sharelist").on("click",function(){
+			var currentTime = new Date().getTime();
+			if(currentTime - lastClickTime > 500){	
+				lastClickTime = currentTime;
+				$("#wrapper").hide();
+				$("#wrapper2").show();
+				dialog.show("加载中");
+				mainlist = "share";
+				updateSharelist(function(){	
+					dialog.hide();
+					//$(".menu-list").hide();	
+				});
+			}	
+		});
+		$("#mylist").on("click",function(){
+			var currentTime = new Date().getTime();
+			if(currentTime - lastClickTime > 500){	
+				lastClickTime = currentTime;
+				$("#wrapper").show();
+				$("#wrapper2").hide();
+				dialog.show("加载中");
+				mainlist = "my";
+				updatelist(function(){		
+					dialog.hide();
+					//$(".menu-list").hide();
+					pulldownup.simpleRefresh();
+				});
+			}	
+		});
+		if(mainlist != "share"){
+			//我的摄像头列表
+			$("#mylist").trigger("click");
+		}else{
+			$("#sharelist").trigger("click");
+		}
+		
+		pulldownup = new Pulldownup(updatelist, null)
+		//pulldownup.refresh();
+		
+		
+		$('.plus').on('click', function(){
+			//JSBridge.scan();
+			window.location.href = "./addCamera2.html";
+		})
+		
+		
+		$(document).on('devicechange', function(){
+			dialog.show("加载中");
+			updatelist(function(){		
+				dialog.hide();
+				pulldownup.refresh();
+				
+			});
+		})
+		//退出直播刷新
+		$(document).on('livequit', function(){
+			dialog.show("加载中");
+			if(mainlist != "share"){
+				//我的摄像头列表
+				$("#mylist").trigger("click");
+			}else{
+				$("#sharelist").trigger("click");
+			}
+		});
+		
+	})
+	
+	
+	
+	/**
+	setTimeout(function(){
+		$(document).trigger("back");
+	}, 2000)
+	**/
+	
+	
+}
+
+
+
+function loadmessage(){
+	$("#wrapper").load("test.html #scroller", function() {
+		  alert("Load was performed.");
+	});
+	
+}
+
+document.addEventListener('touchmove', function (e) { e.preventDefault(); }, false);
+document.onselectstart = function() { return false; }
+
+function switchCameralistMode(){
+	var currentTime = new Date().getTime();
+	if(currentTime - lastClickTime > 500){	
+		lastClickTime = currentTime;
+		var listmode = JSBridge.get("cameralistMode");
+		if(listmode == "bigPicture"){
+			JSBridge.set("cameralistMode","list");
+			$(".back").html('<span class="icon-menu"></span>');
+			$("#camera_list").removeClass("item-default").addClass("item-list");
+			$("#shareCameralist").removeClass("item-default").addClass("item-list");
+		}else{
+			JSBridge.set("cameralistMode","bigPicture");
+			$(".back").html('<span class="icon-computer"></span>');
+			$("#camera_list").removeClass("item-list").addClass("item-default");
+			$("#shareCameralist").removeClass("item-list").addClass("item-default");
+		}
+		//刷新区域
+		var fill = $("#wrapper").height() - $("#camera_list").height();//alert($("#wrapper").height()+"and list "+$("#camera_list").height() );			
+		if(fill >0 ) {
+			$("#fill_area").height(fill+5);
+		}else{
+			$("#fill_area").height(0);
+		}
+		pulldownup.simpleRefresh();
+		shareScroll.refresh();
+	}	
+}
+
+
+
+function updateSharelist(callback){
+	var userid = JSBridge.get("currentUser");
+	//var userid = "18515663772";//3333333333333333333
+	console.log("prepare updateSharelist" + userid);
+	ois.getSharedCamera(
+		userid,
+		function(code, data){
+			var list = data.list;
+			var output = [];
+			for(var i = 0; i < list.length; i++){
+				var item = list[i];
+				output.push(buildShareInfo(item.id, item.name, item.status, item.permission, item.owner, ois.server + "/C" + item.id + "/thumb.jpg?randomcode=" + new Date().getTime()))
+			}
+			
+			$('#shareCameralist').html(output.join(""));
+			shareScroll.refresh();
+			$("#shareCameralist [playable]").off('click');
+			$("#shareCameralist [playable]").on('click', function(){			
+				
+				//Adnroid BUG ,trigger twice click
+				//alert("abc")
+				if(new Date().getTime() - lastClickTime < 200)
+					return true;				
+				JSBridge.play("", $(this).attr("deviceid"), $(this).attr("cameraname"))
+				lastClickTime = new Date().getTime();
+			});
+			
+			$("#shareCameralist [recordable]").off('click');
+			$("#shareCameralist [recordable]").on('click', function(){			
+						
+				JSBridge.play("", $(this).attr("deviceid"), $(this).attr("cameraname"), 'vod')
+				lastClickTime = new Date().getTime();
+			});
+			
+			$("#shareCameralist [settable]").off('click');
+			$("#shareCameralist [settable]").on('click', function(){			
+				//Adnroid BUG ,trigger twice click
+				//alert("abc")
+				if(new Date().getTime() - lastClickTime < 200)
+					return;				
+				lastClickTime = new Date().getTime();
+				var _setting = "cameraSetting.html?cameraid=" + $(this).attr("deviceid")
+				
+				window.location = _setting;
+				
+			});	
+			$("#shareCameralist [dissettable]").off('click');
+			$("#shareCameralist [dissettable]").on('click', function(){			
+				//Adnroid BUG ,trigger twice click
+				//alert("abc")
+				if(new Date().getTime() - lastClickTime < 200)
+					return;				
+				lastClickTime = new Date().getTime();
+				var _setting = "cameraAttribute.html?cameraid=" + $(this).attr("deviceid")
+				window.location = _setting;
+				
+			});	
+			$("#shareCameralist [delshare]").off('click');
+			$("#shareCameralist [delshare]").on('click', function(){			
+				//Adnroid BUG ,trigger twice click
+				//alert("abc")
+				if(new Date().getTime() - lastClickTime < 200)
+					return;				
+				lastClickTime = new Date().getTime();
+				var _item = $(this).parent().parent();
+				//var phone = $(this).attr("owner");
+				var userid = JSBridge.get("currentUser");
+				var cid = $(this).attr("deviceid");
+				 swal	({
+ 	                title: "删除分享？",
+ 	                text:"",
+ 	                showCancelButton: true,
+ 	                confirmButtonColor: "#f56931",
+ 	                confirmButtonText: "删除",
+ 	                cancelButtonText:"取消",
+ 	                animation:false
+ 	            },function(){
+ 					//删除分享
+ 					ois.delShare(userid, cid, function(code, data){
+ 			    		dialog.toast("删除分享成功");
+ 			    		//从列表中删除
+ 			    		_item.remove();
+ 			    		shareScroll.refresh();
+ 			    	},function(code){
+ 			    		if(code == 627)
+ 			    			dialog.toast("摄像头已经被分享了")
+ 			    		else if(code == 628)
+ 			    			dialog.toast("摄像头没有被分享")
+ 			    		else if(code == 600)
+ 			    			dialog.toast("用户不存在")
+ 			    		else
+ 			    			dialog.toast("发生错误，请检查!")	
+ 			    	});
+ 	            });
+				
+			});	
+			if(callback) callback(); 
+		},
+		function(code){
+			if(callback) callback();
+		}
+	)
+}
+function buildShareInfo(id, name, status, permission, owner, thumb){
+	var html = [];
+	var p = getPermission(permission);//分析分享的权限,p[0]是直播，p[1]是回看，p[2]是设置
+	
+	html.push('<div class="item ">')
+	html.push('<div class="mask-title" ></div>')
+	
+	if(status == 1){		
+		html.push('<div class="img" ');
+		if(p[0] == 1){
+			html.push('playable ');
+		}
+		html.push('deviceid="' + id + '" cameraname="' + name + '">')
+		html.push('<img src="' + thumb + '">')
+		html.push('</div>')
+		html.push('<div class="live online">在线</div>')
+	}else if(status == 0){
+		
+		html.push('<div class="img offline mask-gray" deviceid="' + id + '">')
+		html.push('<img src="' + thumb + '">')
+		html.push('</div>')
+		html.push('<div class="live">离线</div>')
+	}else if(status == -1){
+		
+		html.push('<div class="img offline mask-gray" deviceid="' + id + '">')
+		html.push('<img src="' + thumb + '">')
+		html.push('</div>')
+		html.push('<div class="live">关机</div>')
+	}
+	html.push('<div class="label">' + name + '</div>')
+	
+	html.push('<div class="console">')
+	html.push('<div deviceid="' + id + '" class="share" delshare owner="'+ owner +'"><span class="fa fa-share-alt"></span>删除分享</div>')
+	html.push('<div deviceid="' + id + '" class="record" cameraname="' + name + '" ');
+	if(p[1] == 1){
+		html.push('recordable><span class="icon-time"></span>回看录像</div>');
+	}else{
+		html.push('><span class="icon-time" style="color:color:#bcbcbc;"></span>回看录像</div>');
+	}
+	if(p[2] == 1){
+		html.push('<div deviceid="' + id + '" class="set" settable><span class="icon-up"></span>设置</div>')
+	}else{
+		html.push('<div deviceid="' + id + '" class="set" dissettable><span class="icon-up"></span>属性</div>')
+	}
+	html.push('</div>')
+	html.push('</div>')
+	return html.join('');
+}
+function getPermission(p){
+	var t = parseInt(p,10).toString(2);
+	var result = t.split("").reverse();
+	//console.log(result);
+	return result
+}
+
+function getQueryStr(str){  
+	var LocString=String(window.document.location.href);  
+	var rs = new RegExp("(^|)"+str+"=([^\&]*)(\&|$)","gi").exec(LocString), tmp;  
+  
+	if(tmp=rs){  
+		return tmp[2];  
+	}  
+  
+	// parameter cannot be found  
+	return "";  
+}  
+</script>
+
+
+</head>
+<body onload="loaded()">
+
+<div class="header">
+	<div>
+		<div class="back" onclick="switchCameralistMode()"><span class=""></span></div>
+		<div class='title'>我的随看</div>
+		<div class="plus"><span class="icon-plus"></div>
+		<div class="dropdown menu">
+		    <div class="dropdown-toggle menu-item" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+		    	<span class="fa fa-ellipsis-v"></span>
+		    </div>
+		   	<ul class="menu-list dropdown-menu pull-right" aria-labelledby="dropdownMenu1">
+		   		<li id="mylist">我的</li>
+				<li role="separator" class="divider"></li>
+				<li id="sharelist">分享</li>
+		  	</ul>
+		</div>
+	</div>
+	
+</div><!-- /header -->
+
+
+<div id="wrapper">
+	<div id="scroller">
+		<div id="pullDown" class="ub ub-pc c-gra">  			
+			<div class="pullDownLabel">下拉刷新</div>  
+		</div>  
+		<div id="camera_list">
+			
+		</div>
+		<div id="fill_area"></div>
+		<div id="pullUp" class="ub ub-pc c-gra">  
+			<div class="pullUpIcon"></div>  
+			<div class="pullUpLabel">上拉显示更多...</div>  
+		</div>  
+		
+	</div>
+</div>
+<!-- 这是展示分享列表 -->
+<div id="wrapper2" style="display:none;">
+	<div id="shareCameralist">
+			
+	</div>
+</div>
+
+
+<div class="footer">
+	<div class="sel">
+	<span  _onclick="window.location='main.html'"  class="icon-home"></span><br>
+	我的随看
+	</div>
+	
+	<div  onclick="window.location='message.html'">
+	<span class="icon-cloud" ></span><br>
+	消息中心
+	</div>
+	<div  onclick="window.location='center.html'">
+	<span class="icon-user"></span><br>
+	个人中心
+	</div>
+</div><!-- /footer -->
+
+
+</body>
+</html>

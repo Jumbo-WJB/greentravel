@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimum-scale=1.0, maximum-scale=1.0">
+    <meta name="format-detection" content="telephone=no">
+    <title>摄像头设置</title>
+
+    <link rel="stylesheet" href="font-awesome-4.1.0/css/font-awesome.min.css"/>
+    <link rel="stylesheet" href="css/bootstrap.min.css" />
+    <link rel="stylesheet" href="css/sweetalert.css">
+    <link rel="stylesheet" href="sw/style.css" >
+    <link rel="stylesheet" href="css/common.css" />
+    <script type="text/javascript" src="js/jquery-1.11.2.min.js"></script>
+    <script type="text/javascript" src="js/iscroll-probe.js"></script>
+    <script type="text/javascript" src="js/sweetalert-dev.js"></script>
+    <script type="text/javascript" src="js/jsbridge.js"></script>
+    <script type="text/javascript" src="js/ois.js"></script>
+    <script type="text/javascript" src="js/dialog.js"></script>
+    <style>
+        .sweet-alert h2 {
+            font-size:18px;
+        }
+        .sweet-alert p {
+            font-size:16px;
+        }
+    </style>
+</head>
+<body>
+<div class="header">
+    <div>
+        <div class="back" id="backTopc"><span class="icon-back"></span></div>
+        <div id="settingTitle" class="title">摄像头信息</div>
+    </div>
+</div>
+<div id="wrapper" style="bottom: 0px;">
+    <div id="scroller">
+        <div class="content">
+            <p class="text-grey-sm">
+               	 摄像头ID:<span id="cameraID"></span>
+            </p>
+            <ul class="list-group">
+                <li class="list-group-item clearfix" id="setName">
+                    <div class="pull-left"><span>摄像头名称</span></div>
+                    <div class="pull-right text-grey" >
+                        <span id="cameraName"></span>
+                    </div>
+                </li>
+                <li class="list-group-item clearfix">
+                    <div class="pull-left">状态</div>
+                    <div class="pull-right text-grey" id="cameraStatus"></div>
+                </li>
+                <li class="list-group-item clearfix" id="forgetWifi">
+                    <div class="pull-left">所属人</div>
+                    <div class="pull-right text-grey" id="owner"></div>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+</body>
+<script type="text/javascript">
+	var ois = new OIS();
+	var dialog = new Dialog();
+	var lastClickTime = 0;
+	var cameraID = getQueryStr("cameraid");
+	var userID = JSBridge.get('currentUser');
+	$(function(){
+		ois.getSharedCamera(userID,function(code, data){
+			var list = data.list;
+			var output = [];
+			for(var i = 0; i < list.length; i++){
+				var item = list[i];
+				if(item.id == cameraID){
+					$("#cameraID").html(item.id);
+					$("#cameraName").html(item.name);
+					if(item.status == 1){
+						$("#cameraStatus").html("在线");
+					}else if(item.status == 0){
+						$("#cameraStatus").html("离线");
+					}else if(item.status == -1){
+						$("#cameraStatus").html("关机");
+					}
+					$("#owner").html(item.owner);
+				}
+			}
+		},function(code){
+			dialog.toast("获取摄像头属性失败");
+		});
+		//回退事件
+		$("#backTopc").on("click", function() {
+			window.location.href = "./main.html?mainlist=share";
+		});
+	});
+	$(document).on("back",function(){
+		$("#backTopc").trigger("click");
+	});
+	
+	function getQueryStr(str){  
+		var LocString=String(window.document.location.href);  
+		var rs = new RegExp("(^|)"+str+"=([^\&]*)(\&|$)","gi").exec(LocString), tmp;  
+	  
+		if(tmp=rs){  
+			return tmp[2];  
+		}  
+	  
+		// parameter cannot be found  
+		return "";  
+	}  
+
+</script>
+</html>

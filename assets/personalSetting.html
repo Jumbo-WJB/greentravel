@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimum-scale=1.0, maximum-scale=1.0">
+<title>个人中心</title>
+
+<link rel="stylesheet" href="font-awesome-4.1.0/css/font-awesome.min.css" rel="stylesheet" />
+<link rel="stylesheet" href="css/bootstrap.min.css"/>
+<link rel="stylesheet" href="css/swiper.min.css"/>
+<link rel="stylesheet" href="css/sweetalert.css">
+<link rel="stylesheet" href="sw/style.css">
+<link rel="stylesheet" href="css/common.css"/>
+<script type="text/javascript" src="js/jquery-1.11.2.min.js"></script>
+<script type="text/javascript" src="js/iscroll-probe.js"></script>
+<script type="text/javascript" src="js/swiper.jquery.min.js"></script>
+<script type="text/javascript" src="js/sweetalert-dev.js"></script>
+<script type="text/javascript" src="js/jsbridge.js"></script>
+<script type="text/javascript" src="js/ois.js"></script>
+<script type="text/javascript" src="js/dialog.js"></script>
+<script type="text/javascript" src="js/jquery.qrcode.min.js"></script>
+<style>
+	.sweet-alert h2 {
+		font-size:18px;
+	 }
+	.sweet-alert p {
+		font-size:16px;
+	} 
+	#help{
+		height:100%;
+		width:100%;
+		display:none;
+	}
+	.swiper-container{
+		height:100%;
+		width:100%;
+	}
+	.swiper-slide img{
+		width:100%;
+		height:100%;
+	}
+	#personalSettings li{
+		display:none; 
+	}
+	.btn-mysuccess, .btn-mysuccess:hover{
+		color: #fff;
+		background-color: #f56931;
+		border-color: #f56931;
+	}
+	.info{
+		text-align:center;
+		font-weight: bold;
+	}
+/*	.info>div{
+		display: inline-block;
+		width: 250px;
+		height:300px;
+		background-color: #dddddd;
+		padding:10px 25px;
+	}*/
+	.myCode{
+		width:260px;
+		height:300px;
+		margin:20% auto;
+		font-weight: bold;
+		background-color: #dddddd;
+		text-align: center;
+		padding:20px 20px;
+	}
+	#code{
+		width:220px;
+		height:220px;
+		background: white;
+		padding:10px 10px;
+	}
+</style>
+</head>
+<body>
+		<div class="header">
+			<div>
+				<div class="back" id="backTopc"><span class="icon-back"></span></div>
+				<div id="settingTitle" class='title'></div>
+			</div>
+		</div>
+		<div id="wrapper" style="bottom: 0px;">
+			<div id="scroller">
+				<ul class="content" id="personalSettings">
+					<li id="towCode">
+						<div class="myCode">
+							<div id="user"></div>
+							<div id="code"></div>
+						</div>
+					</li>
+					<li id="resetPassword">
+						<input type="password" class="form-control " placeholder="请输入原密码"><p></p>
+						<input type="password" class="form-control" placeholder="请输入新密码（6个字符以上）"><p></p>
+						<input type="password" class="form-control" placeholder="请再次输入新密码">
+						<button type="button" class="btn-orange" style="margin-top:40px;" onclick="resetPS()">确定</button>
+					</li>
+					<li id="order">
+
+					</li>
+					<li id="mycamera">
+					
+					</li>
+					<li id="feedback">
+						<textarea class="form-control" rows="12" placeholder="请输入您的反馈建议（200字以内）···"></textarea>
+						<button type="button" class="btn-orange" style="margin-top:40px;" onclick="feedback()">提交</button>
+					</li>
+				</ul>
+			</div>
+			<div id="help">
+				 <!-- Swiper -->
+			    <div class="swiper-container">
+			        <div class="swiper-wrapper">
+			            <div class="swiper-slide"><img src="./imgs/help/1.jpg"/></div>
+			            <div class="swiper-slide"><img src="./imgs/help/2.jpg"/></div>
+			            <div class="swiper-slide"><img src="./imgs/help/3.jpg"/></div>
+			            <div class="swiper-slide"><img src="./imgs/help/4.jpg"/></div>
+			            <div class="swiper-slide"><img src="./imgs/help/5.jpg"/></div>
+			            <div class="swiper-slide"><img src="./imgs/help/6.jpg"/></div>
+			            <div class="swiper-slide"><img src="./imgs/help/7.jpg"/></div>
+			        </div>
+			        <!-- Add Pagination -->
+			        <div class="swiper-pagination"></div>
+			    </div>
+			</div>
+		</div>
+		
+</body>
+<script type="text/javascript">
+var settings={
+			  "towCode":"我的二维码",
+              "resetPassword":"修改密码",
+              "order":"订购产品类型",
+              "mycamera":"我的摄像头",
+              "help":"帮助",
+              "feedback":"意见反馈"};
+var setting = getQueryString("setting");
+var myScroll;
+var ois = new OIS();
+var dialog = new Dialog();
+var userID = JSBridge.get("currentUser");
+var lastClickTime = new Date().getTime();
+
+$(document).ready(function(){
+	init();
+	
+	$("#backTopc").on("click",function(){
+		if(setting == "feedback"){
+			swal({   
+					 title: "确定退出意见反馈?",   
+					 text: "",   
+					 showCancelButton: true,  
+					 confirmButtonColor: "#f56931",  
+					 confirmButtonText: "确定",  
+					 cancelButtonText: "取消",  
+					 closeOnConfirm: true ,					 
+					 animation:false
+					 }, 
+					 function(){ 
+						 window.location.href="./center.html";
+					} );
+		}else{
+			window.location.href="./center.html";
+		}
+	});
+});
+$(document).on("back",function(){
+	$("#backTopc").trigger("click");
+});
+
+function buildOrderInfo(name,id,obj){
+	var arr = [];
+	arr.push('<div class="list-group-item">');
+	arr.push('<p>名称：'+name+'</p>');
+	arr.push('<p>摄像头ID：'+id+'</p>');
+	if(obj == null){
+		arr.push('<p>已订购：无</p>');
+	}else{
+		//var day = obj.duration/3600/24;//订购时长
+		var endTime = new Date(obj.end_utc*1000).format("yyyy-MM-dd hh:mm:ss");
+		//arr.push('<p>已订购：'+day+'天产品包</p>');
+		arr.push('<p>已订购：'+ obj.name +'</p>');
+		arr.push('<p>结束时间：'+endTime+'</p>');
+	}
+	if(setting == "mycamera"){
+		arr.push('<div onclick="window.location.href=\'orderDetail.html?cameraid='+id+'\'" class="btn btn-mysuccess">订购明细</div>')
+	}
+	
+	arr.push('</div>')
+	return arr.join("");
+}
+Date.prototype.format = function(fmt)   
+{ //author: meizz   
+  var o = {   
+    "M+" : this.getMonth()+1,                 //月份   
+    "d+" : this.getDate(),                    //日   
+    "h+" : this.getHours(),                   //小时   
+    "m+" : this.getMinutes(),                 //分   
+    "s+" : this.getSeconds(),                 //秒   
+    "q+" : Math.floor((this.getMonth()+3)/3), //季度   
+    "S"  : this.getMilliseconds()             //毫秒   
+  };   
+  if(/(y+)/.test(fmt))   
+    fmt=fmt.replace(RegExp.$1, (this.getFullYear()+"").substr(4 - RegExp.$1.length));   
+  for(var k in o)   
+    if(new RegExp("("+ k +")").test(fmt))   
+  fmt = fmt.replace(RegExp.$1, (RegExp.$1.length==1) ? (o[k]) : (("00"+ o[k]).substr((""+ o[k]).length)));   
+  return fmt;   
+}  
+
+function init(){
+	//myScroll = new IScroll('#wrapper',{ mouseWheel: true ,click:true, probeType:1, bounce:true});
+	
+	$("#settingTitle").html(settings[setting]);
+	$("#personalSettings li").hide();
+	$("#"+setting).show();
+	if(setting == "order" || setting == "mycamera"){
+		myScroll = new IScroll('#wrapper',{ mouseWheel: true ,click:true, probeType:1, bounce:true});
+		ois.getCamera(
+				userID,
+				function(code, data){
+					
+					var list = data.list;
+					var output = [];
+					for(var i = 0; i < list.length; i++){
+						var item = list[i];
+						if(item.subscribe.duration != 0){
+							output.push(buildOrderInfo(item.base.name,item.base.camera_id,item.subscribe));
+						}else{
+							output.push(buildOrderInfo(item.base.name,item.base.camera_id));
+						}
+					}
+					$('#'+setting).html(output.join(""));
+					setTimeout(function(){
+						 myScroll.refresh();
+					},10);
+				},
+				function(code){
+					console.log(code);
+				}
+			)
+	}else if(setting == "help"){
+		 var swiper = new Swiper('.swiper-container', {
+		        pagination: '.swiper-pagination',
+		        paginationClickable: true
+		    });
+	}
+}
+function resetPS(){
+	var currentTime = new Date().getTime();
+	if(currentTime - lastClickTime > 500){	
+		lastClickTime = currentTime;
+		var inputs = $("#resetPassword input");
+		var oldps = inputs.eq(0).val();
+		var newps = inputs.eq(1).val();
+		var newps2 = inputs.eq(2).val();
+		if(isNull(oldps)){
+			dialog.toast("输入的原密码不能为空");
+		}else if(isNull(newps)||isNull(newps2)){
+			dialog.toast("输入的新密码不能为空");
+		}else if(newps != newps2){
+			dialog.toast("输入的新密码不一致");
+		}else if(newps.length < 6){
+			dialog.toast("输入的新密码长度小于6");
+		}else{//
+			dialog.show("提交中");
+			var request = {
+					"user": userID,
+					"password_old": oldps,
+					"password_new": newps,
+					"password_confirm": newps2
+				}
+			ois.resetPassword(request,function(code,data){
+				dialog.hide();
+				setTimeout( function(){ dialog.toast("修改密码成功"); },10);
+				setTimeout(function(){
+					$("#backTopc").trigger("click");
+				},500);
+			},function(code){
+				dialog.hide();
+				if(code == 604){
+					setTimeout( function(){ dialog.toast("输入的原密码有误"); },10);
+				}else{
+					setTimeout( function(){ dialog.toast("修改密码失败"); },10);
+				}
+				
+			});
+		}
+	}	
+	
+}
+
+function feedback(){
+	var currentTime = new Date().getTime();
+	if(currentTime - lastClickTime > 500){	
+		lastClickTime = currentTime;
+		var val = $("#feedback textarea").eq(0).val();
+		val = val.replace(/[\r\n]/g,"");//去除所有换行
+		if(isNull(val)){
+			dialog.toast("反馈内容不能为空");
+		}else if(getBlen(val) > 400){
+			dialog.toast("反馈内容过长");
+		}else{
+			dialog.show("提交中");
+			var time = new Date().getTime();
+			var request = {"user":userID,"content":val,"time":time };
+			ois.feedback(request,function(code,data){
+				dialog.hide();
+				dialog.toast("提交反馈成功");
+				setTimeout(function(){
+					window.location.href="./center.html";
+				},500);
+			},function(code){
+				dialog.hide();
+				dialog.toast("提交反馈失败");
+			});
+		}
+	}	
+	
+}
+
+//获取href里的参数，name是参数名
+function getQueryString(name) {
+    var reg = new RegExp('(^|&)' + name + '=([^&]*)(&|$)', 'i');
+    var r = window.location.search.substr(1).match(reg);
+    if (r != null) {
+        return unescape(r[2]);
+    }
+    return null;
+}
+//检测一个字符串是否为空，或者是全部是空格
+function isNull( str ){ 
+	if ( str == "" ) return true; 
+	var regu = "^[ ]+$"; 
+	var re = new RegExp(regu); 
+	return re.test(str); 
+	} 
+//计算字符串的字符数
+function getBlen(str) {  
+   if (str == null) return 0;  
+   if (typeof str != "string"){  
+       str += "";  
+	}  
+    return str.replace(/[^\x00-\xff]/g,"**").length;  
+}
+//	二维码功能
+var userCode = $('#user').html('用户名:'+userID+'<br/><br/>');//userID
+	$('#code').qrcode({
+		render: "table",
+		width: 200,
+		height:200,
+		text: userID
+	})
+</script>
+</html>

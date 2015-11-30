@@ -1,0 +1,372 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">朝歌随看</string>
+    <string name="version">0</string>
+    <string name="app_version">SuiKan 1.3.1</string>
+    <string name="test_server">suncam.demo.sunnovo-anywhere.tv</string>
+    <!-- <string name="upgrade_server">http://172.16.7.126:8080</string> -->
+
+    <string name="app_type">zhaoge</string>
+    <!--
+    <string name="test_server">221.6.3.80</string>
+    <string name="test_server">10.191.255.153</string>
+    <string name="test_epg_server">http://10.191.255.153/common/</string>
+    <string name="test_ois_server">http://10.191.255.153</string>
+    -->
+    <string name="test_ftp_server">file.sys.sunniwell.net</string>
+    <string name="test_ftp_root">flyTVcamera/</string>
+    <string name="test_ftp_user">f@jb</string>
+    <string name="test_ftp_password">YdjtCo</string>
+    <string name="rail_server">211.157.167.78</string>
+    <string name="rail_ftp_server">file.sys.sunniwell.net</string>
+    <string name="rail_ftp_root">/flyTVcamera/</string>
+    <string name="rail_ftp_user">f@jb</string>
+    <string name="rail_ftp_password">YdjtCo</string>
+    <string name="gehua_server">flycam1.flytv.com.cn</string>
+    <string name="gehua_ftp_server">flycam1.flytv.com.cn</string>
+    <string name="gehua_ftp_root">/var/ftp/pub/flyTVcamera/</string>
+    <string name="gehua_ftp_user">admin</string>
+    <string name="gehua_ftp_password">admin</string>
+    <string name="gehua_edu_server">flycam2.flytv.com.cn</string>
+    <string name="gehua_edu_ftp_server">flycam2.flytv.com.cn</string>
+    <string name="gehua_edu_ftp_root">/var/ftp/pub/flyTVcamera/</string>
+    <string name="gehua_edu_ftp_user">admin</string>
+    <string name="gehua_edu_ftp_password">admin</string>
+    <string name="server_port">5000</string>
+    <string name="admin_user">13682473616</string>
+    <string name="http_port">2028</string>
+    <string name="root_directory">/sunniwell/</string>
+    <string name="upgrade_directory">/sunniwell/upgrade/</string>
+    <string name="upphoto_directory">/sunniwell/SnapShot/</string>
+    <string name="photo_directory">/sunniwell/camera/</string>
+    <string name="record_directory">/sunniwell/record/</string>
+    <string name="action_exit">返回登录</string>
+    <string name="hint_username">用户名</string>
+    <string name="hint_password">密码</string>
+    <string name="hint_oldpass">请输入原密码</string>
+    <string name="hint_newpass">请输入新密码(6位以上字符)</string>
+    <string name="hint_newpasscfm">请再次输入新密码</string>
+    <string name="remPsd">记住密码</string>
+    <string name="autoLogin">自动登录</string>
+    <string name="login">登 录</string>
+    <string name="forgetPsd">忘记密码?</string>
+    <string name="reset_send">获取短信验证码</string>
+    <string name="reset_send_norepeat">获取短信验证码(60秒内不能重复获取)</string>
+    <string name="reset_commit">确定重置</string>
+    <string name="register">注册</string>
+    <string name="register_phoneNum">你的手机号码是:</string>
+    <string name="register_next">下一步</string>
+    <string name="register_submit">提交验证码</string>
+    <string name="register_send">获取验证码</string>
+    <string name="register_Resend">重新获取验证码</string>
+    <string name="register_ok">完成注册</string>
+    <string name="reg_sucss">注册成功！</string>
+    <string name="reg_failed">注册失败，请稍后再试。</string>
+    <string name="login_error">用户名/密码错误，请重新输入！</string>
+    <string name="login_failed">登录失败，请稍后再试。</string>
+    <string name="login_sucss">登录成功，欢迎使用。</string>
+    <string name="scan">扫描摄像头二维码</string>
+    <string name="verificode">获取验证码</string>
+    <string name="camera_add_cancle">添加摄像头未完成 是否取消</string>
+    <string name="camera_add_uid_error">请扫描摄像头二维码以获取摄像头序列号</string>
+    <string name="camera_add_descripter_error">请输入摄像头安装位置的名称</string>
+    <string name="camera_add_failed">摄像头已绑定</string>
+    <string name="camera_add_timeout">添加摄像头失败，请检查网络是否正常或者摄像头序列号是否填写正确！</string>
+    <string name="camera_bind_timeout">摄像头绑定超时,请检查网络是否正常</string>
+    <string name="camera_have_user">此摄像头已绑定其他用户</string>
+    <string name="camera_add_noexsit">绑定失败,后台未添加</string>
+    <string name="camera_add_nopower">对不起,您没有添加此摄像头的权限</string>
+    <string name="camera_del_failed">摄像头删除失败</string>
+    <string name="camera_unbind_failed">摄像头解除绑定失败</string>
+    <string name="camera_unbind_noexsit">解绑失败,后台未添加或者已禁用</string>
+    <string name="camera_unbind_timeout">摄像头解除绑定超时</string>
+    <string name="ok">确 定</string>
+    <string name="personal_title">帐号</string>
+    <string name="personal_account">我的账号</string>
+    <string name="personal_password">修改密码</string>
+    <string name="personal_purchased">订购产品类型</string>
+    <string name="personal_camera">我的摄像头</string>
+    <string name="app_setting">设置</string>
+    <string name="app_about">关于</string>
+    <string name="personal_setting">管理员设置</string>
+    <string name="personal_exit">退出</string>
+    <string name="app_title">看家宝</string>
+    <string name="home_title">主页</string>
+    <string name="register_title">注册</string>
+    <string name="reset_title">重置密码</string>
+    <string name="cam_id">摄像头ID:</string>
+    <string name="cam_name">名称:</string>
+    <string name="account">用户名:</string>
+    <string name="svctype">订购产品类型:</string>
+    <string name="appvesion">版本号:</string>
+    <string name="modify">修改</string>
+    <string name="finish">完成</string>
+    <string name="home_config">配置</string>
+    <string name="home_help">帮助</string>
+    <string name="cloud_title">云空间</string>
+    <string name="alarm_mg">报警信息</string>
+    <string name="photo_mg">本地图片</string>
+    <string name="video_mg">回看视频</string>
+    <string name="alarm_photo">报警图片</string>
+    <string name="alarm_video">报警视频</string>
+    <string name="addCamera">添加摄像头</string>
+    <string name="uuid">UUID:</string>
+    <string name="cameraspeed">摄像头转速:</string>
+    <string name="uuid_default">EWK984R6J2YB9H6MW7EJ</string>
+    <string name="camera_motionDetection">区域布防</string>
+    <string name="open">开启</string>
+    <string name="close">关闭</string>
+    <string name="camera_status">摄像头状态</string>
+    <string name="state_normal">正常</string>
+    <string name="state_uncontent">未连接</string>
+    <string name="state_broken">故障</string>
+    <string name="state_unknow">未知</string>
+    <string name="camera_switch">摄像头配置</string>
+    <string name="clarity">清晰度</string>
+    <string name="SD">标清</string>
+    <string name="HD">高清</string>
+    <string name="LD">流畅</string>
+    <string name="select">选择</string>
+    <string name="edit">编辑</string>
+    <string name="backplayer">继续播放</string>
+    <string name="add">添加</string>
+    <string name="tips">提示</string>
+    <string name="delete">删除</string>
+    <string name="deleteall">全部清空</string>
+    <string name="cancle">取消</string>
+    <string name="selectall">全选</string>
+    <string name="noselectall">全不选</string>
+    <string name="upload">上传</string>
+    <string name="delete_success">删除成功</string>
+    <string name="delete_fail">删除失败，请稍后重试</string>
+    <string name="operate_success">操作成功</string>
+    <string name="operate_fail">操作失败，请稍后重试</string>
+    <string name="start_date">开始日期：</string>
+    <string name="end_date">结束日期：</string>
+    <string name="get_passwrd">获取密码</string>
+    <string name="hint_cameraUID">摄像头序列号</string>
+    <string name="hint_phoneNo1">请输入11位手机号码</string>
+    <string name="hint_phoneNo2">请输入注册时所用手机号码</string>
+    <string name="hint_cameraDesc">摄像头安装位置的名称</string>
+    <string name="camera_send">发送方式</string>
+    <string name="send_direct">直连</string>
+    <string name="send_forward">转发</string>
+    <string name="play_decord">加密方式</string>
+    <string name="decord">普通</string>
+    <string name="encord">加密</string>
+    <string name="add_check">绑定验证</string>
+    <string name="check">验证</string>
+    <string name="no_check">不验</string>
+    <string name="share_content">ShareSDK for Android不仅集成简单、支持如QQ好友、微信、新浪微博、腾讯微博等所有社交平台，而且还有强大的统计分析管理后台，实时了解用户、信息流、回流率、传播效应等数据，详情见官网http://sharesdk.cn @ShareSDK</string>
+    <string name="share_content_short">ShareSDK不仅集成简单、支持如微信、新浪微博、腾讯微博等社交平台，而且还有强大的统计分析管理后台，实时了解用户、信息流、回流率、传播效应等数据，详情见官网http://sharesdk.cn @ShareSDK</string>
+    <string name="evenote_title">随看视频共享</string>
+    <string name="refresh">刷新</string>
+    <string name="camere_motion_open">布防开</string>
+    <string name="camere_motion_close">布防关</string>
+    <string name="motion_keyopen">一键布防</string>
+    <string name="motion_keyclose">一键撤防</string>
+    <string name="motion_keyopen_confirm">确定一键布防吗?</string>
+    <string name="motion_keyclose_confirm">确定一键撤防吗?</string>
+    <string name="motion_open">开启</string>
+    <string name="motion_close">关闭</string>
+    <string name="camera_connecting">正在连接....</string>
+    <string name="camera_offine">摄像头断线，无法监看</string>
+    <string name="camera_unbind">摄像头被删除，请退出播放</string>
+    <!-- camera player -->
+    <string name="camera_init_finish">摄像头初始化完毕！</string>
+    <string name="speak_init_finish">对讲初始化完毕！</string>
+    <string name="speak">说话</string>
+    <string name="cloud">云空间</string>
+    <string name="camera">抓拍</string>
+    <string name="flip">翻转</string>
+    <string name="share">分享</string>
+    <string name="motion">布防</string>
+    <string name="motionapp">应用</string>
+    <string name="motionadd">添加</string>
+    <string name="time_0">00:00:00</string>
+    <string name="ask_motionDetection">是否关闭区域布防</string>
+    <string name="ask_flip">画面将翻转180度</string>
+    <string name="motionDetection_is_full">最多只能添加4个</string>
+    <string name="add_motionDetection_fail">添加失败 请重试</string>
+    <string name="tell_open_motionDetection">请先开启移动布防</string>
+    <string name="photo_first">已经是第一张了！</string>
+    <string name="photo_end">已经是最后一张了！</string>
+    <string name="state_down">已下载</string>
+    <string name="state_up">已上传</string>
+    <string name="state_noup">未上传</string>
+    <string name="state_new">最新</string>
+
+    <!-- Security question -->
+    <string-array name="security_questions">
+        <item>您的学号是什么？</item>
+        <item>您的班主任叫什么名字？</item>
+        <item>您的宠物叫什么？</item>
+        <item>您的爱人叫什么？</item>
+    </string-array>
+    <string-array name="camera_speed">
+        <item>一倍速</item>
+        <item>二倍速</item>
+        <item>三倍速</item>
+        <item>四倍速</item>
+    </string-array>
+    <string-array name="video_type">
+        <item>回看视频</item>
+        <item>报警视频</item>
+    </string-array>
+    <string-array name="photo_type">
+        <item>报警图片</item>
+        <item>本地图片</item>
+    </string-array>
+
+    <!-- hint -->
+    <string name="hint_newphone">请输入手机号码</string>
+    <string name="hint_newpasswd">请输入密码(6位以上字符)</string>
+    <string name="hint_usercode">请输入验证码</string>
+    <string name="hint_newpasswdcfm">请再次输入密码</string>
+    <string name="hint_question">请选择密保问题</string>
+    <string name="hint_answer">请输入密保问题答案</string>
+    <string name="hint_psderror">两次输入的密码不一致，请重新输入！</string>
+    <string name="hint_speed">请选择转速</string>
+    <string name="hint_phone">请输入手机号</string>
+    <string name="hint_smscode">请输入短信验证码</string>
+
+    <!-- input valid -->
+    <string name="epg_invail">epg地址非法 必须以http://开头</string>
+    <string name="ois_invail1">ois地址非法 必须以http://开头</string>
+    <string name="ois_invail2">ois地址非法 请输入正确ip</string>
+    <string name="server_invail">server地址非法 </string>
+    <string name="ois_null">ois不能为空</string>
+    <string name="epg_null">epg不能为空</string>
+    <string name="server_null">server不能为空</string>
+    <string name="phone">手机号码：</string>
+    <string name="psw_null">密码不能为空！</string>
+    <string name="pswcfg_null">确认密码不能为空！</string>
+    <string name="phone_null">手机不能为空！</string>
+    <string name="user_null">用户名不能为空！</string>
+    <string name="phone_invalid">手机号码无效！</string>
+    <string name="psw_invalid">两次密码不一致！</string>
+    <string name="password_length_error">密码长度必须大于6个字符！</string>
+    <string name="oldpsw_null">初始密码不能为空！</string>
+    <string name="newpsw_null">新密码不能为空！</string>
+    <string name="commit_ok">提交成功！</string>
+    <string name="refresh_time">刷新时间:</string>
+    <string name="your_camera">你的摄像头[</string>
+    <string name="your_camera_alter">]检测到异常!</string>
+    <string name="camera_offline_noplay">摄像头断线，无法监看!</string>
+    <string name="askfor_deletecamera">确定删除摄像头？</string>
+    <string name="askfor_deletephoto">确定删除？</string>
+    <string name="askfor_deleteall">确定全部清空？</string>
+    <string name="askfor_uploadphoto">确定上传？</string>
+    <string name="select_photo">至少选择一项</string>
+    <string name="hint_select_date">选择时间范围：</string>
+    <string name="resetinputuser">请先输入用户名！</string>
+    <string name="resetiphone_null">手机号码不能为空！</string>
+    <string name="smspwd_null">短信密码不能为空！</string>
+    <string name="wait">请稍后...</string>
+    <string name="upgrad_service">可升级到30天的服务产品</string>
+    <string name="upgrade_string">暂无订购信息</string>
+    <string name="linktaobao">http://www.taobao.com/</string>
+    <string name="scan_text">将二维码放入框内, 即可自动扫描</string>
+    <string name="user_disable">用户被禁用 </string>
+    <string name="camera_disable">摄像头被禁用 播放将退出 </string>
+    <string name="player_end">播放完毕 </string>
+    <string name="player_stop">播放停止  请退出重新播放</string>
+    <string name="player_error">播放出错  请退出重试</string>
+    <string name="player_continue">网络恢复 继续播放</string>
+    <string name="network_error">网络出了小问题</string>
+    <string name="network_error_ask">网络出了小问题 请退出重试</string>
+    <string name="noAlarmdata">暂时无报警信息！</string>
+    <string name="noNormalVideodata">暂时无回看视频！</string>
+    <string name="noAlertVideodata">暂时无报警视频！</string>
+    <string name="noRecVideodata">暂时无录制视频！</string>
+    <string name="noCapPhotodata">暂时无抓拍图片！</string>
+    <string name="noAlertPhotodata">暂时无报警图片！</string>
+    <string name="noCameradata">暂时无摄像头！</string>
+    <string name="count_ordered">已订购</string>
+    <string name="count_detail">账户详情</string>
+    <string name="count_remain">账户余额</string>
+    <string name="count_to_recharge">充值</string>
+    <string name="count_recharge_hint">充值金额</string>
+    <string name="money_input_error">输入有误.充值金额只能包含数字,不能有其他字符</string>
+    <string name="money_input_null">充值金额不能为空</string>
+    <string name="count_subscribe">订购</string>
+    <string name="remaining_days">剩余天数：0</string>
+    <string name="will_not_subscribe">不订购</string>
+    <string name="ask_for_quit">是否退出</string>
+    <string name="player_no_bean">播放异常 请退出重新播放</string>
+    <string name="setting_item1">电子调焦</string>
+    <string name="setting_item2">短信通知</string>
+    <string name="setting_item3">邮件通知</string>
+    <string name="setting_item4">网络流量提醒</string>
+    <string name="setting_item5">微博账号绑定</string>
+    <string name="setting_item6">视频质量</string>
+    <string name="setting_item7">影像翻转</string>
+    <string name="setting_item8">环境模式</string>
+    <string name="setting_item9">wifi设置</string>
+    <string name="night">夜间</string>
+    <string name="day">白天</string>
+    <string name="unknowtime">未知时间</string>
+    
+    
+    <string name="error_600">用户不存在</string>
+    <string name="error_620">摄像头后台未添加</string>
+    <string name="error_621">摄像头被禁用</string>
+    <string name="error_622">摄像头过期</string>
+    <string name="error_623">摄像头不在线</string>
+    <string name="error_670">摄像头已绑定其他用户</string>
+    <string name="error_unknown">未知错误</string>
+    
+
+    <!-- soap message -->
+
+    
+    <string name="getversion_fail">获取新版本信息失败,请稍后重试</string>
+    <string name="upgrade_prompt">检测到新版本%1$s，请立即升级\n\n新版本修改:\n%2$s</string>
+    <string name="no_upgrade">未检测到新版本</string>
+    <string name="downloading">正在下载</string>
+    <string name="upgrade_fail">升级失败，请重新打开应用</string>
+    <string name="upgrade_later">下次再说</string>
+    <string name="camera_desc_null">摄像头名称不能为空</string>
+    <string name="select_onweek">请选择一周内日期</string>
+    <string name="cameradesc_length">摄像头名称不能超过%1$s个字符或%2$s个汉字</string>
+    <string name="release_to_refresh_count">松开刷新,当前共%1$s项</string>
+    <string name="audiorecord_disable">广电同方看家宝录音被禁止,无法对讲,请打开录音权限</string>
+    <string name="login_nomac">获取不到mac信息,无法登录</string>
+    <string name="login_mac_disable">获取不到mac信息,请设置允许看家宝获取wifi信息或关闭360等安全管理软件,退出应用重新登录</string>
+    <string name="cannot_deleteall">没有数据不用清空</string>
+    <string name="select_add_mode">请选择添加方式</string>
+    <string name="select_camera">选择摄像头</string>
+    <string name="add_mode_scan">扫描二维码添加 ></string>
+    <string name="add_mode_wifi">配置无线并添加</string>
+    <string name="wifi_info">摄像头连接的Wi-Fi</string>
+    <string name="wifi_pwd_hint">请输入wifi密码</string>
+    <string name="wifi_tip">请接通摄像头电源，等待摄像头语音提示“已准备连接网络”后，再点击下一步</string>
+    <string name="camera_finding">正在查找摄像头,请稍等...</string>
+    <string name="camera_findfail">无法搜索到摄像头,请重试!</string>
+    <string name="camera_find_retry">重新搜索</string>
+    <string name="wifi_name_null">未连接wifi</string>
+    <string name="wifi_pwd_null">wifi密码不能为空</string>
+    <string name="bind">绑定</string>
+    <string name="stop">停止</string>
+    <string name="reset">重置</string>
+    <string name="reset_wifi">重置wifi</string>
+    <string name="reset_wifi_timeout">重置wifi超时</string>
+    <string name="reset_wifi_success">重置wifi成功</string>
+    <string name="reset_wifi_fail">重置wifi失败</string>
+    <string name="reset_wifi_confirm">确定重置此摄像头的wifi信息?</string>
+    <string name="flip_timeout">设置画面翻转超时</string>
+    <string name="flip_success">设置成功，画面稍后翻转</string>
+    <string name="flip_fail">设置画面翻转失败，请稍后再试</string>
+    <string name="app_upgrade">App升级</string>
+    <string name="current_version">当前版本</string>
+    <string name="check_upgrade">检测升级</string>
+    <string name="notify_camera_upgrade">通知摄像头升级成功,摄像头稍后升级</string>
+    <string name="notify_camera_upgrade_fail">通知摄像头升级失败</string>
+    <string name="arrearage">您此项服务已过期</string>
+    <string name="title_activity_record">RecordActivity</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="title_activity_add_camera">AddCameraActivity</string>
+
+</resources>

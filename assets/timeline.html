@@ -1,0 +1,412 @@
+<!DOCTYPE HTML>
+<html lang="zh-cn">
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="pragma" content="no-cache">
+	<meta http-equiv="Expires" CONTENT="0">
+	<meta http-equiv="Cache-Control" CONTENT="no-cache">
+	<meta http-equiv="Pragma" CONTENT="no-cache">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.5, user-scalable=no">
+	
+	<script type="text/javascript" src="js/jsbridge.js"></script>
+	<script src="js/jquery-1.11.2.min.js"></script>	
+	
+	
+	<style>
+		html { overflow-x: hidden; overflow-y: hidden; }
+		body{
+			margin:0;			
+			padding:0px;
+			padding-top:5px;
+			overflow-x:hidden;
+			overflow-y:hidden;
+			-webkit-tap-highlight-color:rgba(0,0,0,0);
+		}
+		.cotainer{
+			position:absolute;
+			width:100%;
+			bottom:5px;
+			
+		}
+		.title{			
+			font-size:14px;			
+			text-align:left;
+			height:80px;
+			margin:0px;
+			padding:0px;
+		}
+		.title > ul{
+			list-style:none;
+			text-align:left;		
+			padding:0px;
+			padding-left:10px;
+			position:relative;
+			top:-5px;
+		}
+		.title > ul li{
+			display:inline-block;
+			font-size:12px;
+			width:40px;
+		}		
+		
+		.target{
+			width:100%;
+			height:60px;		
+			background-color:#CCCCCC;
+		}
+		
+		.axis{    
+			height:15px;
+			
+			background-color:#CCCCCC;
+			margin:0px;    
+			text-align:left;
+			font-size:0;    
+			
+			white-space:nowrap;
+		}
+	
+		.kd{
+			border-right:1px solid gray;
+			display:inline-block;
+			margin:0px;            
+			font-size:0px;    
+			margin-right:1px;
+			position: relative;
+		}
+
+		.topkd1{ 
+			top:-8px;        
+			height:7px;
+		}
+		.topkd2{
+			top:-5px;        
+			height:10px;
+		}
+		.topkd3{
+			top:0px;        
+			height:15px;
+		}
+		//legend 
+		.legend{
+			text-align:center;
+			font-size:10px;			
+			margin:0;
+			width:100%;
+			height:30px;		
+			
+			white-space:nowrap;
+			
+		}
+
+		.legenditem{
+			text-align:center;
+			width:60px;	
+			
+			left:0px;
+			position: relative;
+			display:inline-block;
+			top:10px;
+			height:40px;
+		}
+
+		.bottomkd1{     
+			
+			height:7px;
+		}
+		.bottomkd2{          
+			
+			height:10px;
+		}
+		.bottomkd3{    
+			
+			height:15px;
+		}
+		
+		.bc{
+			position:absolute;			
+			bottom:-12px;
+			z-index:10;
+			width:1px;
+			height:75px;
+			background-color:red;
+			left:50%;
+		}
+		.time{
+			font-size:18px;
+			color:blue;			
+			width:100%;
+			font-weight:bold;
+			position:absolute;
+			text-align:center;
+			top:-25px;
+			height:15px;
+		}
+
+		div.msg{
+			width:100%;
+			height:100px;
+			background-color:black;
+			color:white;
+			overflow-y:scroll;
+		}
+
+	</style>
+	<script>
+		var PCMODE = true;
+		
+		Date.prototype.Format = function(fmt) {// author: meizz
+			var o = {
+				"M+" : this.getMonth() + 1,
+				// 月份
+				"d+" : this.getDate(),
+				// 日
+				"h+" : this.getHours(),
+				// 小时
+				"m+" : this.getMinutes(),
+				// 分
+				"s+" : this.getSeconds(),
+				// 秒
+				"q+" : Math.floor((this.getMonth() + 3) / 3),
+				// 季度
+				"S" : this.getMilliseconds() // 毫秒
+			};
+			if (/(y+)/.test(fmt))
+				fmt = fmt.replace(RegExp.$1, (this.getFullYear() + "").substr(4 - RegExp.$1.length));
+			for (var k in o)
+				if (new RegExp("(" + k + ")").test(fmt))
+					fmt = fmt.replace(RegExp.$1, (RegExp.$1.length == 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
+			return fmt;
+		}
+		
+		function getQueryStr(str){  
+			var LocString=String(window.document.location.href);  
+			var rs = new RegExp("(^|)"+str+"=([^\&]*)(\&|$)","gi").exec(LocString), tmp;  
+		  
+			if(tmp=rs){  
+				return tmp[2];  
+			}  
+		  
+			// parameter cannot be found  
+			return "";  
+		}  
+		function log(content){
+			//$("#msg").html($("#msg").html() + "<br>" + content)
+			$("#msg").html(content)
+			
+		}
+		
+		function buildview(){
+			var kdtop = "", kdbottom = "", kedulegent = "";
+			var v1 = new Date();			
+			
+			for(var j  = 1; j <= 30*24 + 15; j++){
+				if((j-15) % 30 == 0){
+					 kdtop +=  '<div class="kd topkd3" time=' + (j-15) +  '></div>'
+					 kdbottom +=  '<div class="kd bottomkd3"></div>'
+					 if(j<=30*24)
+						kedulegent += '<div class="legenditem">' + (j-15)/30 + ':00' + '</div>'
+				}else if((j-5) % 5 == 0){
+					kdtop +=  '<div class="kd topkd2" time=' +  (j-15)  + '></div>'
+					kdbottom +=  '<div class="kd bottomkd2"></div>'
+				}else{
+					kdtop +=  '<div class="kd topkd1" time=' +  (j-15) + '></div>'
+					kdbottom +=  '<div class="kd bottomkd1"></div>'
+				}
+			}
+		
+			
+			var outary = [];
+			outary.push('<div class="day">');
+			outary.push('<div class="axis">' + kdtop + '</div>');			
+			outary.push('<div class="legend">' + kedulegent + '</div>');
+			outary.push('<div class="axis">' + kdbottom + '</div>');			
+			outary.push('</div>')			
+			$('#target').width(30*24*2 + 30);
+			$('#target').append(outary.join(""));
+			//$('#target').append(outary.join(""));
+			log(outary.join(""))
+			//alert(new Date().getTime()-v1.getTime())
+		}
+		//增加时间轴的事件监听
+		function initTimelineEvent(){
+			var target = document.getElementById("target");
+			var winWidth = $(window).width(), targetWidth = $(target).width();
+			var startPageX = 0,lastPageX = 0 ,  startPositionLeft = 0, lastPositionLeft = 0, dragBeginTime = 0;
+			target.addEventListener('touchstart', function(e) {				
+				e.preventDefault();		
+				target.style.webkitTransition = '';				
+				target.style.webkitTransform = "translate3d(" + ($(target).position().left) + "px,0,0)";				
+				var touch = e.touches[0];				
+				dragBeginTime = new Date().getTime();
+				log("touch start");				
+				startPageX = touch.pageX;	
+				lastPageX = -10000;
+				startPositionLeft = $(target).position().left;				
+			}, false);
+			
+			
+			target.addEventListener('touchmove', function(e) {				
+				e.preventDefault();												
+				var touch = e.touches[0];
+				
+				//alert($(document).width());
+				var moveto = startPositionLeft + (touch.pageX - startPageX);
+				log("plan moveto" + moveto + ";window Width:" + winWidth + ":" + (targetWidth - winWidth/2) );
+				if(moveto > winWidth/2 - 28)
+					moveto = winWidth/2 - 28;
+				if(moveto < -(targetWidth - winWidth/2)-4)
+					moveto = -(targetWidth - winWidth/2-4)
+				
+				
+				target.style.webkitTransform = "translate3d(" + moveto + "px," + '0' + ",0)";
+				lastPageX = touch.pageX;
+				lastPositionLeft = moveto;
+			}, false);		
+			
+			
+			
+			target.addEventListener('touchend', function(e) {				
+				e.preventDefault();
+				var touch = e.touches[0];
+				
+				var swipecheck = new Date().getTime() - dragBeginTime;				
+				
+				//log("拖动结束.");					
+				
+				//计算是否产生swipe 事件
+				
+				if(swipecheck <= 250){
+					if(target.style.webkitTransition != 'all ease 0.6s')
+						target.style.webkitTransition = 'all ease 0.6s';
+						
+					var moveto = 0;
+					var cv  = Math.abs(lastPageX - startPageX);
+					log("swipe判断.位移" + cv);
+					if(lastPageX == -10000 || cv<20) return;
+					if(lastPageX > startPageX)						
+						moveto = lastPositionLeft + 200 + parseInt(200*cv/100);
+					else
+						moveto = lastPositionLeft - 200 - parseInt(200*cv/100);
+					if(moveto > winWidth/2 - 28)
+						moveto = winWidth/2 - 28;
+					if(moveto < -(targetWidth - winWidth/2)-4)
+						moveto = -(targetWidth - winWidth/2-4)
+					
+					
+					target.style.webkitTransform = "translate3d(" + moveto + "px,0,0)";					
+					
+					//log("swipe判断." + startPageX + ":" + dx);
+				}
+			}, false);
+			if(PCMODE){
+				$('.kd').on('click', function(){
+					var hour = parseInt($(this).attr('time')/30)
+					var minute= $(this).attr('time') % 30				
+				
+					//format
+					hour = hour<10?"0"+hour:hour;
+					minute = minute<10?"0"+minute:minute;
+					
+					var exp = currentDate + " " + hour + ":" +minute+ ":00";
+					alert(exp)
+				})
+			}
+			
+
+		}
+		
+		//设置时间显示组件
+		function initTimeshow(){
+			var lastvalue = "";			
+			var target = document.getElementById("target");
+			var delayShow;
+			setInterval(function(){
+				
+				var hour = Math.abs(parseInt(($(target).position().left - 132)/60))				
+				var minute= Math.abs(parseInt(($(target).position().left - 132) % 60))
+				
+				
+				//format
+				hour = hour<10?"0"+hour:hour;
+				minute = minute<10?"0"+minute:minute;
+				
+				var exp = currentDate + " " + hour + ":" +minute+ ":00";
+				$(".time").html(exp)
+				//log($(target).position().left + "/,time:" +  hour + ":" + minute  + ":00");							
+				
+				if(exp != lastvalue && lastvalue!=""){
+					//触发播放事件
+					if(delayShow) {
+						clearTimeout(delayShow);
+						delayShow = null;
+					}
+					delayShow = setTimeout(function(){
+						//var dt = new Date(exp).Format('yyyyMMddhhmmss');						
+						JSBridge.timeupdate(exp);
+					},500);
+					
+					
+				}
+				lastvalue = exp;
+			},100)
+		}
+		var currentDate;
+		
+		function initRecordList(){
+			var days = getQueryStr("days");
+			if(days == '')  days = 7;
+			
+			var date = new Date();
+			var outary = [];
+			date.setDate(date.getDate() -days);
+			for(var i = days; i >=0 ; i--){		
+				
+				outary.push('<li mdate="' + date.Format('yyyy-MM-dd') + '">' + date.Format("MM.dd") + '</li>')			
+					
+				 
+				 date.setDate(date.getDate() + 1);
+			}			
+			
+			$("#daylist").html(outary.join(""));
+			$("li").on('click', function(e){				
+				currentDate = $(this).attr("mdate");	
+				$("li").css('color','black');
+				$(this).css('color', 'red');
+			});
+			$("li:nth-last-child(1)").trigger('click');
+		}
+		function init(){
+			//构建视图
+			buildview();			
+			
+			initTimelineEvent();
+			initTimeshow();
+			
+			//初始化录制日期列表
+			initRecordList();
+		}
+		
+		$(init)
+	</script>
+	<body>		
+		<div class='msg' id="msg"></div>
+		<div class="title">
+			<ul id="daylist">
+				<li>8.11</li>
+				<li>8.12</li>
+				<li>8.13</li>
+				<li>8.14</li>
+				<li>8.15</li>
+				<li>8.16</li>
+				<li>8.17</li>
+			</ul>			
+		</div>
+		<div class="cotainer">
+			<div class="time">dfdf</div>
+			<div class="bc"></div>
+			<div class="target" id="target"></div>
+			
+		</div>
+	</body>
+</html>

@@ -1,0 +1,59 @@
+* {
+	-webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	box-sizing: border-box;
+}
+
+html {
+	-ms-touch-action: none;
+}
+
+body,ul,li {
+	padding: 0;
+	margin: 0;
+	border: 0;
+}
+
+body {
+	font-size: 12px;
+	font-family: ubuntu, helvetica, arial;
+	overflow: hidden; /* this is important to prevent the whole page to bounce */
+}
+
+	
+#pullDown,#pullUp {    
+    height: 40px;    
+    line-height: 40px;    
+    padding: 5px 10px; 
+	text-align:center;
+    font-weight: bold;    
+    font-size: 14px;    
+    color: #888;    
+}    
+    
+#pullDown .pullDownIcon,#pullUp .pullUpIcon {    
+    display: block;    
+    float: left;    
+    width: 40px;    
+    height: 40px;        
+    -webkit-background-size: 40px 80px;    
+    background-size: 40px 80px;    
+    -webkit-transition-property: -webkit-transform;    
+    -webkit-transition-duration: 250ms;    
+}    
+    
+#pullDown .pullDownIcon {    
+    -webkit-transform: rotate(0deg) translateZ(0);    
+}    
+    
+#pullUp .pullUpIcon {    
+    -webkit-transform: rotate(-180deg) translateZ(0);    
+}    
+    
+#pullDown.flip .pullDownIcon {    
+    -webkit-transform: rotate(-180deg) translateZ(0);    
+}    
+    
+#pullUp.flip .pullUpIcon {    
+    -webkit-transform: rotate(0deg) translateZ(0);    
+}    

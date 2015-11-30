@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimum-scale=1.0, maximum-scale=1.0">
+
+<title></title>
+
+<link rel="stylesheet" href="css/sweetalert.css">
+<link href="sw/style.css" rel="stylesheet" type="text/css">
+<link href="css/common.css" rel="stylesheet" type="text/css">
+<link href="css/scroll.css" rel="stylesheet" type="text/css">
+<link href="font-awesome-4.1.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+<script type="text/javascript" src="js/iscroll-probe.js"></script>
+<script type="text/javascript" src="js/jquery-1.11.2.min.js"></script>
+<script type="text/javascript" src="js/ois.js"></script>
+<script type="text/javascript" src="js/jsbridge.js"></script>
+<script type="text/javascript" src="js/pulldownup.js"></script>
+<script type="text/javascript" src="js/dialog.js"></script>
+<script src="js/sweetalert-dev.js"></script>
+<script type="text/javascript">
+var ois = new OIS();
+var pulldownup = null;;
+var dialog = new Dialog();
+var lastClickTime = 0;
+/**
+ * 构建摄像头html
+ *@id  摄像头ID
+ *@name 摄像头名称
+ *@status 状态 ：-1,standby; 0,offline; 1, online; 2,disable
+ */
+function buildInfo(id, name, status, thumb){
+	var html = [];
+	var listmode = JSBridge.get("cameralistMode_msg");
+	if(listmode){
+		if(listmode == "bigPicture"){
+			html.push('<div class="item item-default" id="' + id + '">')
+			html.push('<div style="height:40px;width:100%;border-radius: 2px;background:rgba(0,0,0,0.3);position:absolute;z-index:2;"></div>')
+		}else{
+			html.push('<div class="item item-list" id="' + id + '">')
+		}
+	}else{
+		JSBridge.set("cameralistMode","bigPicture");
+		html.push('<div class="item item-default" id="' + id + '">')
+		html.push('<div style="height:40px;width:100%;border-radius: 2px;background:rgba(0,0,0,0.3);position:absolute;z-index:2;"></div>')
+	}
+	
+	if(status == 1){		
+		html.push('<div class="img">')
+		html.push('<img src="' + thumb + '">')
+		html.push('</div>')
+		html.push('<div class="alert online" cid="' + id + '"></div>')
+	}else{
+		
+		html.push('<div class="img offline mask-gray">')
+		//html.push('<div class="mask"></div>');
+		html.push('<img src="' + thumb + '">')
+		//html.push('<img src="imgs/offline.png">');				
+		html.push('</div>')
+		html.push('<div class="alert offline" cid="' + id + '"></div>')
+	}
+	html.push('<div class="label">' + name + '</div>')		
+	html.push('</div>')	
+	
+	return html.join('');
+}
+
+var alertinfo = {};
+function updatelist(onchange){
+	//TODO 获取报警统计
+	
+	
+	var userid = JSBridge.get("currentUser");
+	console.log("prepare updatelist" + userid);
+	ois.getCamera(
+		userid,
+		function(code, data){
+			
+			//alert(JSON.stringify(data));
+			var list = data.list;
+			var output = [];
+			for(var i = 0; i < list.length; i++){
+				var item = list[i];
+				output.push(buildInfo(item.base.camera_id, item.base.name, item.base.status, ois.server + "/C" + item.base.camera_id + "/thumb.jpg?randomcode=" + new Date().getTime()))
+				//output.push(item.base.status)
+			}
+			$('#camera_list').html(output.join(""));
+			
+			var fill = $("#wrapper").height() - $("#camera_list").height()			
+			if(fill >0 ) {
+				$('#camera_list').append('<div style="height:' + (fill+5) + 'px"></div>');
+			}
+			//显示告警数量
+			var total = 0;
+			alertinfo = {};
+			//$('.online').each(function(){
+			$('.alert').each(function(){
+				var that = this;				
+				(function(that){
+					ois.getAlert(
+						$(that).attr('cid'),function(code, data){						
+							$(that).html(data.length)
+							total+= data.length;						
+							if(total > 0){
+								alertinfo[$(that).attr('cid')] = data.length;						
+								$("#info").show();
+								$("#info>span").text(total);
+							}
+						},function(code){
+							$(that).html("E" + code);
+							dialog.toast("获取报警图片出错");
+						}
+				)})(that);
+			})
+			$('.item').off('click');
+			$('.item').on('click', function(){
+				//判断是否有数据
+				var cid = $(this).attr("id");	
+				//console.log("----"+JSON.stringify(alertinfo));
+				if(alertinfo[cid] && parseInt(alertinfo[cid])>0)
+					window.location = "message_detail.html?id=" + $(this).attr("id")
+				else
+					dialog.toast("没有告警图片");
+				
+			});
+			
+			if(onchange) onchange(true);
+		},
+		function(code){
+			//alert("error")
+			if(onchange) onchange(false);
+		}
+	)
+}
+document.addEventListener('touchmove', function (e) { e.preventDefault(); }, false);
+
+
+var time= 0;
+$(document).on('back', function(){
+	if(new Date().getTime() - time < 2000){
+		JSBridge.finish();	
+	}else{
+		dialog.toast("再按一次退出程序");
+		time= new Date().getTime();
+	}
+	
+	
+	/* swal(
+			{   
+			 title: "提示",   
+			 text: "确定退出?",   
+			 showCancelButton: true,  
+			 confirmButtonColor: "#f56931",  
+			 confirmButtonText: "确定",  
+			 cancelButtonText: "取消",  
+			 closeOnConfirm: true ,					 
+			 animation:false
+			 }, 
+			 function(){ 
+				 JSBridge.finish();					
+				 return;
+				 }
+			 ); */	
+		}	
+);
+function switchCameralistMode(){
+	var currentTime = new Date().getTime();
+	if(currentTime - lastClickTime > 500){	
+		lastClickTime = currentTime;
+		var listmode = JSBridge.get("cameralistMode_msg");
+		if(listmode == "bigPicture"){
+			JSBridge.set("cameralistMode_msg","list");
+			$(".back").html('<span class="icon-menu"></span>');
+		}else{
+			JSBridge.set("cameralistMode_msg","bigPicture");
+			$(".back").html('<span class="icon-computer"></span>');
+		}
+		//listmode = JSBridge.get("cameralistMode");
+		dialog.show("加载中");
+		updatelist(function(){		
+			dialog.hide();
+			//pulldownup.refresh();
+			
+		});
+	}	
+}
+
+$(function(){
+	var listmode = JSBridge.get("cameralistMode_msg");
+	if(listmode){
+		if(listmode == "bigPicture"){
+			$(".back").html('<span class="icon-computer"></span>');
+		}else{
+			$(".back").html('<span class="icon-menu"></span>');
+		}
+	}else{
+		JSBridge.set("cameralistMode_msg","bigPicture");
+		$(".back").html('<span class="icon-computer"></span>');
+	}
+	dialog.show("加载中");
+	updatelist(function(){		
+		dialog.hide();
+		pulldownup.refresh();
+		
+	});	
+	pulldownup = new Pulldownup(updatelist, null)
+	
+})
+
+</script>
+
+<style type="text/css">
+
+
+.item{
+	margin:4px;	
+	border-radius:2px;			
+	margin-bottom:15px;
+	position:relative;		
+	
+}
+.item > .label{
+	font-size:16px;
+	color:white;
+	font-weight:bold;	
+}
+.item > .alert{
+	min-width:30px;
+	padding:1px 5px;
+	font-size:12px;
+	text-align:center;		
+	border-radius:3px;		
+	color:white;
+	height:17px;
+}
+.item > .img{	
+	border-radius:5px;
+	position:relative;
+	border:1px solid #DDDDDD;
+	text-align:center;
+}
+.mask-gray { 
+-webkit-filter: grayscale(100%); 
+-moz-filter: grayscale(100%); 
+-ms-filter: grayscale(100%); 
+-o-filter: grayscale(100%); 
+filter: grayscale(100%); 
+filter: gray; 
+} 
+
+.item > .img .mask{
+	width:100%;
+	height:100%;
+	position:absolute;
+	top:0px;left:0px;
+	background:#ddd;
+	opacity:0.6;
+}
+.item-default > .label{
+	position:absolute;
+	top:12px;
+	left:16px;
+	z-index:3;
+}
+.item-default > .alert{
+	position:absolute;
+	right:15px;
+	top:12px;
+	z-index:3;
+}
+.highlight{
+	color:#f56931;
+}
+.online{	
+	background-color:#f56931;	
+	color:white;
+}
+
+.item-default > .img{
+	width:100%;
+	height:240px;			
+}
+
+.offline{
+	/* opacity:0.5; */
+	background-color:gray;
+}
+
+.img >img{
+	width:100%;
+	height:100%;		
+}
+
+.item-list{
+	border:1px solid #EEEEEE;
+	margin:0;
+	padding:5px;
+	width:50%;
+	float:left;
+}
+.item-list > .label{
+	position:absolute;
+	top:4px;
+	left:5px;
+	color:#333;
+}
+.item-list > .alert{
+	position:absolute;
+	top:22px;
+	left:6px;
+}
+.item-list > .img{
+	display:inline-block;
+	width:100%;
+	height:80px;
+	margin-top:16px;	
+}
+#info{
+	text-align:center;
+	margin:5px;
+	font-size:14px;
+	color:gray;
+	
+}
+
+
+a:link,a:visited,a:hover{
+	color:white;
+	text-decoration:none; 
+	
+}
+.del{
+	
+	position:absolute;
+	right:7px;	
+	top:8px;
+	padding-top:5px;	
+	font-size:14px;	
+	color:white;
+}
+
+</style>
+</head>
+<body>
+<div class="header">
+	<div>
+		<div class="back" onclick="switchCameralistMode()"><span class="icon-computer"></span></div>
+		<div class='title'>消息中心</div>
+		<div class="plus"></div>			
+	</div>
+	
+</div><!-- /header -->
+
+<div id="wrapper">
+	<div id="scroller">
+		<div id="pullDown" class="ub ub-pc c-gra">  			
+			<div class="pullDownLabel">下拉刷新</div>  
+		</div>  
+		<div id="info" style="display:none">
+			<i class='fa fa-warning'></i>共发现 <span class="highlight">100</span> 告警通知及图片,点击查看
+		</div>  
+		<div id="camera_list">
+			
+		</div>
+		<div id="pullUp" class="ub ub-pc c-gra">  
+			<div class="pullUpIcon"></div>  
+			<div class="pullUpLabel">上拉显示更多...</div>  
+		</div>  
+		
+	</div>
+</div>
+
+<div class="footer">
+	<div>
+	<span onclick="window.location='main.html'"  class="icon-home"></span><br>
+	我的随看
+	</div>
+	
+	<div  class="sel"  _onclick="window.location='message.html'">
+	<span class="icon-cloud" ></span><br>
+	消息中心
+	</div>
+	<div  onclick="window.location='center.html'">
+	<span class="icon-user"></span><br>
+	个人中心
+	</div>
+</div><!-- /footer -->
+
+ 
+
+</body>
+</html>

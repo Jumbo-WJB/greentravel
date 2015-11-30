@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimum-scale=1.0, maximum-scale=1.0">
+    <meta name="format-detection" content="telephone=no">
+    <title>分享</title>
+
+    <link rel="stylesheet" href="font-awesome-4.1.0/css/font-awesome.min.css"/>
+    <link rel="stylesheet" href="css/bootstrap.min.css" />
+    <link rel="stylesheet" href="css/bootstrap-theme.css"/>
+    <link rel="stylesheet" href="css/sweetalert.css">
+    <link rel="stylesheet" href="sw/style.css" />
+    <link rel="stylesheet" href="css/common.css" />
+    <script type="text/javascript" src="js/jquery-1.11.2.min.js"></script>
+    <script type="text/javascript" src="js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="js/iscroll-probe.js"></script>
+    <script type="text/javascript" src="js/sweetalert-dev.js"></script>
+    <script type="text/javascript" src="js/jsbridge.js"></script>
+    <script type="text/javascript" src="js/ois.js"></script>
+    <script type="text/javascript" src="js/dialog.js"></script>
+    <style>
+        .sweet-alert h2 {
+            font-size:18px;
+        }
+        .sweet-alert p {
+            font-size:16px;
+        }
+        .shared-user{
+            border: none;
+            width:130px;
+        }
+        .shared-user:focus{
+            outline: none;
+        }
+        .scan{
+        	position: absolute;
+			right: 10px;
+			top: 8px;
+			padding:6px;
+        }
+        .select li{text-align: center;}
+       
+        #wrapper1 {
+            position:absolute;
+            z-index: 1;
+            top: 45px;
+            bottom: 60px;
+            left: 0;
+            width: 100%;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body onload="init()">
+<div class="header">
+    <div>
+        <div class="back" id="backTopc"><span class="icon-back"></span></div>
+        <div id="settingTitle" class="title">分享</div>
+        <div class="scan"><span class=" fa fa-qrcode"></span></div>
+    </div>
+</div>
+<div id="wrapper1" style="bottom: 0px;">
+	<div class="content">
+	    <ul class="list-group">
+	        <li class="list-group-item clearfix">
+	            <div class="pull-left">类型</div>
+	            <div class="dropdown pull-right">
+	            	<div class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+				    	<span id="action">私密分享</span>&nbsp;<span class="fa fa-angle-down "style="color: #f56931;"></span>
+				    </div>
+	                <ul class="dropdown-menu select" role="menu" aria-labelledby="action">
+	                    <li id="noShare"><a href="#">不分享</a></li>
+	                    <li role="separator" class="divider"></li>
+	                   <!--  <li id="publicShare"><a href="#">公开分享</a></li>
+	                    <li role="separator" class="divider"></li> -->
+	                    <li id="privateShare"><a href="#">私密分享</a></li>
+	                </ul>
+	            </div>
+	        </li>
+	        <li class="list-group-item clearfix" style="display: none;" id="shareTo">
+	            <div class="pull-left">分享给</div>
+	            <div class="pull-right " style="color: #f56931;"><input type="text" class="shared-user" placeholder="请输入分享人账号"></div>
+	        </li>
+	    </ul>
+	
+	    <div class="btn-orange" style="margin:20px 0;" id="submit">确定</div>
+	
+	    <div style="display: none;" id="text-one">
+	        <span>私密分享管理</span>
+	        <div id="wrapper" style="top:210px;padding:10px;">
+	            <ul class="list-group" id="sharePeople">
+	              <!--   <li class="list-group-item clearfix">
+	                    <div class="pull-left phone">18515663772</div>
+	                    <div class="pull-right">
+	                        <span class="fa fa-times-circle fa-lg" style="color: gray;padding:0px 5px;"></span>
+	                    </div>
+	                </li> -->
+	            </ul>
+	        </div>
+	    </div>
+	</div>
+</div>
+
+</body>
+<script type="text/javascript">
+	var ois = new OIS();
+	var dialog = new Dialog();
+	var lastClickTime = 0;
+    var myScroll = null;
+    var cameraID = getQueryStr("cameraid");
+    var userID = JSBridge.get('currentUser');
+    $(function(){
+    	$("#backTopc").on("click", function() {
+			window.location.href = "./main.html";
+		});
+   	    $('#noShare').on('click',function(){
+   	        $('#action').html('不分享');
+   	        $('#shareTo,#text-one').hide()
+   	    });
+   	    $('#publicShare').on('click',function(){
+   	        $('#action').html('公开分享</span');
+   	        $('#shareTo,#text-one').hide()
+   	    });
+   	    $('#privateShare').on('click',function(){
+   	        $('#action').html('私密分享');
+   	        $('#shareTo,#text-one').show()
+   		 	myScroll.refresh();
+   	    });
+   	    //按钮提交
+   	    $("#submit").on("click",function(){
+   	    	var currentTime = new Date().getTime();
+   			if(currentTime - lastClickTime > 500){	
+   				lastClickTime = currentTime;
+   				var action = $('#action').html();
+   				if( action == "不分享"){
+   					 swal({
+   	    	                title: "关闭分享？",
+   	    	                text:"关闭分享以后，此摄像头所有的分享都被删除",
+   	    	                showCancelButton: true,
+   	    	                confirmButtonColor: "#f56931",
+   	    	                confirmButtonText: "关闭",
+   	    	                cancelButtonText:"取消",
+   	    	                animation:false
+   	    	            },function(){
+   	    	            	//关闭分享
+   	        	    		closeShare(cameraID);
+   	    	            });
+       	    	}else if(action == "私密分享"){
+       	    		//添加私密分享
+       	    		var phone = $(".shared-user").val();
+       	    		if(!/^\d{11,11}/.test(phone)){			 
+       					dialog.toast("请填写正确的手机号");				
+       					return;
+       				}else if(phone == userID){
+       					dialog.toast("摄像头属于本用户");				
+       					return;
+       				}	
+       	    		
+       	    		addShare(phone,cameraID);
+       	    	}
+   			}
+   	    	
+   	    });
+   	    //二维码扫描
+   	    $(".scan").on("click",function(){
+   	    	var currentTime = new Date().getTime();
+   			if(currentTime - lastClickTime > 500){	
+   				lastClickTime = currentTime;
+   				$("#privateShare").trigger("click");
+   				JSBridge.scanqr();
+   			}
+   	    });
+    });
+    //监听回退事件
+    $(document).on("back",function(){
+		$("#backTopc").trigger("click");
+	});
+  	//监听二维码扫描结果
+	$(document).on("scanqrresult", function(event, data){ 
+		var res = JSON.parse(data);
+		if(res.cameraid != ""){
+			$(".shared-user").val(res.cameraid);
+		}else{
+			//
+			dialog.toast("二维码扫描失败！")
+		}	
+	});
+    function init(){
+    	myScroll = new IScroll('#wrapper', {mouseWheel: true ,click:true, probeType:1, bounce:true });
+    	$("#privateShare").trigger("click");
+    	//获取分享的用户列表
+    	getSharedUser(cameraID);
+    }
+    function getSharedUser(id){
+    	ois.getSharedUser(id, function(code,data){
+    		var list = data.list;
+			var output = [];
+			for(var i = 0; i < list.length; i++){
+				output.push(bulidShareInfo(list[i]));
+			}
+			$("#sharePeople").html(output.join(""));
+			myScroll.refresh();
+			bindClick();
+    	},function(code){
+    		dialog.hide();
+    		showinfoBycode(code);
+    	})
+    }
+    //这个是为了给分享列表添加click事件
+    function bindClick(){
+    	 $('#sharePeople>li span').off('click');
+		 $('#sharePeople>li span').on('click',function(){
+    	        var $this= $(this);
+    	        var currentTime = new Date().getTime();
+    	        if(currentTime - lastClickTime > 500){
+    	            lastClickTime = currentTime;
+    	            swal	({
+    	                title: "删除分享？",
+    	                text:"",
+    	                showCancelButton: true,
+    	                confirmButtonColor: "#f56931",
+    	                confirmButtonText: "删除",
+    	                cancelButtonText:"取消",
+    	                animation:false
+    	            },function(){
+    					//删除分享
+    					var item = $this.parent().parent();
+    					var phone = item.find(".phone").html();
+    					delShare(phone, cameraID, item);
+    	                //$this.parents("li").remove();
+    	            });
+    	        }
+   	   	});
+    }
+    function closeShare(id){
+    	dialog.show("关闭分享")
+    	ois.disableShare(id, function(code,data){
+    		dialog.hide();
+    		$(".shared-user").val("");
+    		$("#sharePeople").html("");//关闭分享后，摄像头私密分享的列表为空
+    		dialog.toast("关闭分享成功");
+    	},function(code){
+    		dialog.hide();
+    		showinfoBycode(code);
+    	})
+    }
+    function addShare(phone, id){
+    	ois.addShare(phone, id, function(code, data){
+    		dialog.toast("添加分享成功");
+    		//加入到列表中
+    		$("#sharePeople").append(bulidShareInfo(phone));
+    		bindClick();
+    		myScroll.refresh();
+    	},function(code){
+    		showinfoBycode(code);
+    	});
+    }
+    function delShare(phone, id, item){
+    	ois.delShare(phone, id, function(code, data){
+    		dialog.toast("删除分享成功");
+    		//从列表中删除
+    		item.remove();
+    		myScroll.refresh();
+    	},function(code){
+    		showinfoBycode(code);
+    	});
+    }
+    function showinfoBycode(code){
+		if(code == 0)
+			dialog.toast("网络异常，请检查!")
+		else if (code == 627)
+			dialog.toast("摄像头已经被分享了")
+		else if(code == 628)
+			dialog.toast("摄像头没有被分享")
+		else if(code == 600)
+			dialog.toast("用户不存在")
+		else
+			dialog.toast("发生错误，请检查!")		
+	}
+    function bulidShareInfo(phone){
+    	var arr = [];
+    	arr.push('<li class="list-group-item clearfix">');
+    	arr.push('<div class="pull-left phone">' + phone + '</div>');
+    	arr.push(' <div class="pull-right"><span class="fa fa-times-circle fa-lg" style="color: gray;padding:0px 5px;"></span></div></li>');
+    	return arr.join("");
+    }
+    function getQueryStr(str){  
+		var LocString=String(window.document.location.href);  
+		var rs = new RegExp("(^|)"+str+"=([^\&]*)(\&|$)","gi").exec(LocString), tmp;  
+	  
+		if(tmp=rs){  
+			return tmp[2];  
+		}  
+		// parameter cannot be found  
+		return "";  
+	}  
+
+</script>
+</html>

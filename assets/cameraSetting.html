@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimum-scale=1.0, maximum-scale=1.0">
+<title>摄像头设置</title>
+
+<link rel="stylesheet" href="font-awesome-4.1.0/css/font-awesome.min.css"/>
+<link rel="stylesheet" href="css/bootstrap.min.css" />
+<link rel="stylesheet" href="css/sweetalert.css">
+<link rel="stylesheet" href="sw/style.css" >
+<link rel="stylesheet" href="css/common.css" />
+<script type="text/javascript" src="js/jquery-1.11.2.min.js"></script>
+<script type="text/javascript" src="js/iscroll-probe.js"></script>
+<script type="text/javascript" src="js/sweetalert-dev.js"></script>
+<script type="text/javascript" src="js/jsbridge.js"></script>
+<script type="text/javascript" src="js/ois.js"></script>
+<script type="text/javascript" src="js/dialog.js"></script>
+<style>
+ .icon-edit .path1:before {
+	content: "\e603";
+	color: #f56931;
+}
+.icon-upload .path1:before {
+	content: "\e624";
+	color: #f56931;
+}
+.btn-mysuccess, .btn-mysuccess:hover{
+	color: #fff;
+	background-color: #f56931;
+	border-color: #f56931;
+}
+.btn-mydefault, .btn-mydefault:hover{
+	color: #333;
+	background-color: #fff;
+	border-color: #dbdbdb;
+}
+.sweet-alert h2 {
+	font-size:18px;
+ }
+.sweet-alert p {
+	font-size:16px;
+} 
+</style>
+</head>
+<body>
+	<div class="header">
+		<div>
+			<div class="back" id="backTopc"><span class="icon-back"></span></div>
+			<div id="settingTitle" class="title">摄像头设置</div>
+		</div>
+	</div>
+	<div id="wrapper" style="bottom: 0px;">
+		<div id="scroller">
+			<div class="content">
+				<p class="text-grey-sm">
+					摄像头ID:<span id="cameraID">8140-01D4-1314858</span>
+				</p>
+				<ul class="list-group">
+					<li class="list-group-item clearfix" id="setName">
+						<div class="pull-left">摄像头名称:<span id="cameraName"></span></div>
+						<div class="pull-right text-orange" >
+							<span class="icon-edit" ><span class="path1"></span><span class="path2"></span></span>重命名
+						</div>
+					</li>
+					<li class="list-group-item clearfix">
+						<div class="pull-left">
+							当前版本<br />
+							<span class="text-grey-sm" id="version">4.7.7.7.0.1</span>
+						</div>
+						<div class="pull-right " id="testUpgrade" style="color: #f56931; margin-top:4%;">
+							<span class="icon-upload" ><span class="path1"></span><span class="path2"></span></span>检测升级
+						</div>
+					</li>
+					<li class="list-group-item clearfix">
+						<div class="pull-left">摄像头状态</div>
+						<div class="pull-right text-grey" id="cameraStatus"></div>
+					</li>
+					<li class="list-group-item clearfix" id="forgetWifi">
+						<div class="pull-left">重置Wi-Fi</div>
+						<div class="pull-right text-orange" >重置</div>
+					</li>
+					<li class="list-group-item clearfix" id="factoryReset">
+						<div class="pull-left">恢复出厂设置</div>
+						<div class="pull-right text-orange" >恢复</div>
+					</li>
+					<li class="list-group-item clearfix" id="sd">
+						<div class="pull-left">SD卡设置</div>
+						<div class="pull-right text-orange" >
+							<span class="icon-more icon-lg" ></span>
+						</div>
+					</li>
+		
+				</ul>
+				<ul class="list-group">
+					<li class="list-group-item clearfix">
+						<div class="pull-left" style="padding-top:4px;">摄像头开关机</div>
+						<div class="pull-right">
+							<div class="btn-group btn-group-sm">
+								<div class="btn btn-mysuccess">ON</div>
+								<div class="btn btn-mydefault">OFF</div>
+							</div>
+						</div>
+					</li>
+					<li class="list-group-item clearfix" id="cameraSwitch">
+						<div class="pull-left">定时开机</div>
+						<div class="pull-right text-orange" >
+							<span class="icon-more icon-lg" ></span>
+						</div>
+					</li>
+				</ul>
+				<ul class="list-group">
+					<li class="list-group-item clearfix">
+						<div class="pull-left" style="padding-top:4px;">报警推送开关</div>
+						<div class="pull-right">
+							<div class="btn-group btn-group-sm">
+								<div class="btn btn-mysuccess">ON</div>
+								<div class="btn btn-mydefault">OFF</div>
+							</div>
+						</div>
+					</li>
+					<li class="list-group-item clearfix" id="alertSwitch">
+						<div class="pull-left">定时报警</div>
+						<div class="pull-right text-orange" >
+							<span class="icon-more icon-lg" ></span>
+						</div>
+					</li>
+				</ul>
+				<div id="unbind" class="btn-orange" style="margin:20px 0;">解绑摄像头</div>
+			</div>
+		</div>
+	</div>
+	
+</body>
+<script type="text/javascript">
+	var myScroll;
+	var ois = new OIS();
+	var dialog = new Dialog();
+	var userID = JSBridge.get("currentUser");
+	var mac = JSBridge.get("mac");
+	//var mac = "38:bc:1a:e3:49:97";
+	var cameraID = getQueryStr("cameraid");
+	var cameraInfo = "";
+	var switchs = $('.btn-group');
+	var lastClickTime = new Date().getTime();
+	
+	$(document).ready(
+			function() {
+				init();
+				
+				$("#setName").on("click",function(){
+					window.location.href = "./cameraNameSetting.html";
+				});
+				$("#testUpgrade").on("click",function(){
+					var currentTime = new Date().getTime();
+					if(currentTime - lastClickTime > 500){	
+						lastClickTime = currentTime;
+						checkUpgrade();	
+					}				
+				});
+				$("#forgetWifi").on("click",function(){
+					var currentTime = new Date().getTime();
+					if(currentTime - lastClickTime > 500){	
+						lastClickTime = currentTime;
+						swal	({
+							 title: "重置摄像头的wifi配置", 
+							 text:"重置后，摄像头需配置网络后才可使用！",
+							 showCancelButton: true,  
+							 confirmButtonColor: "#f56931",   
+							 confirmButtonText: "重置",  
+							 cancelButtonText:"取消",
+							 animation:false
+						},function(){
+							var request = {	
+									"src":mac,
+									"dest":cameraID,
+									"action": "forget_wifi"
+								}
+							dialog.show("重置WiFi");
+							ois.forgetWifi(request,function(code,data){
+								dialog.hide();
+								dialog.toast("重置成功！")
+							},function(code){
+								dialog.hide();
+								dialog.toast("重置失败！请再次尝试···")
+							})
+						});
+					}				
+					
+				});
+				$('#factoryReset').on('click',function(){
+					var currentTime = new Date().getTime();
+					if(currentTime - lastClickTime > 500){
+						lastClickTime = currentTime;
+						swal	({
+							title: "提示",
+							text:"确定恢复出厂设置？",
+							showCancelButton: true,
+							confirmButtonColor: "#f56931",
+							confirmButtonText: "恢复",
+							cancelButtonText:"取消",
+							animation:false
+						},function(){
+							var request = {
+								"src":mac,
+								"dest":cameraID,
+								"action": "factory_reset"
+							}
+							dialog.show("恢复出厂设置");
+							ois.factoryReset(request,function(code,data){
+								dialog.hide();
+								dialog.toast("恢复成功！")
+							},function(code){
+								dialog.hide();
+								dialog.toast("恢复失败！请再次尝试···")
+							})
+						});
+					}
+
+				});
+				$("#sd").on("click", function() {
+					window.location.href = "./SDSetting.html";
+					localStorage.setItem("cameraSetting", "sd");
+				});
+				$("#cameraSwitch").on("click", function() {
+					window.location.href = "./timeSwitch.html";
+					localStorage.setItem("cameraSetting", "cameraSwitch");
+				});
+				
+				$("#backTopc").on("click", function() {
+					window.location.href = "./main.html";
+				});
+				$("#unbind").on("click",function(){
+					var currentTime = new Date().getTime();
+					if(currentTime - lastClickTime > 1000){	
+						lastClickTime = currentTime;
+						swal({
+							 title: "解绑摄像头？",    
+							 showCancelButton: true,  
+							 confirmButtonColor: "#f56931",   
+							 confirmButtonText: "解绑",  
+							 cancelButtonText:"取消",
+							 animation:false
+						},function(){
+							ois.unbind(cameraID,function(code,data){
+								dialog.toast("解绑成功！")
+							},function(code){
+								dialog.toast("解绑失败！")
+							})
+						});			
+					}				
+				});
+			});
+	$(document).on("back",function(){
+		$("#backTopc").trigger("click");
+	});
+	function init() {
+		myScroll = new IScroll('#wrapper',{ mouseWheel: true ,click:true, probeType:1, bounce:true});
+		
+		getThisCamera(cameraID);
+		//initPage();
+	}
+	function initPage(){
+		cameraInfo = JSON.parse(localStorage.getItem("currentCamera"));
+		if(cameraInfo.base.status == 1){
+			$("#cameraStatus").html("在线");
+		}else if(cameraInfo.base.status == 0){
+			$("#cameraStatus").html("离线");
+		}else if(cameraInfo.base.status == -1){
+			$("#cameraStatus").html("关机");
+		}
+		$("#cameraName").html(cameraInfo.base.name);
+		$("#cameraID").html(cameraInfo.base.camera_id);
+		$("#version").html(cameraInfo.version.soft_ver);
+		if (cameraInfo.power.status == 1) {
+			setSwitchState(switchs.eq(0), true);
+		} else {
+			setSwitchState(switchs.eq(0), false);
+		}
+		if (cameraInfo.alert.status == 1) {
+			setSwitchState(switchs.eq(1), true);
+			$("#alertSwitch").on("click", function() {
+				window.location.href = "./timeSwitch.html";
+				localStorage.setItem("cameraSetting", "alertSwitch");
+			});
+		} else {
+			setSwitchState(switchs.eq(1), false);
+			$("#alertSwitch div:eq(1)").removeClass("text-orange").addClass("text-grey");
+			$("#alertSwitch").off("click");
+		} 
+		switchs.eq(0).on('click',function() {
+			var currentTime = new Date().getTime();
+			if(currentTime - lastClickTime > 500){	
+				lastClickTime = currentTime;
+				var request = {	
+						"src":mac, //发起请求的设备id, 一般为手机端和PC,是设备的mac地址
+						"dest":cameraID, //请求目标的设备id，一般为摄像头
+						"config":
+						{
+							"power":"", //on:表示打开功能，off：关闭功能
+							"schedule":cameraInfo.power.schedule,
+							"days":cameraInfo.power.days //重复周期，为从星期一到星期天的位组合，自左向右为星期一到星期日.
+						}
+					};
+				var $this =  $(this);
+				var isON =  $(this).find(".btn").eq(0).hasClass("btn-mysuccess");
+				$(this).find(".btn").toggleClass("btn-mydefault").toggleClass("btn-mysuccess");  
+				if(isON){//现在想要关闭
+					request.config.power = "off";
+					setSwitch("power","off",request,null,function(){
+						setTimeout(function(){
+							$this.find(".btn").toggleClass("btn-mydefault").toggleClass("btn-mysuccess"); 
+						},1000);
+					});
+					
+				}else{
+					request.config.power = "on";
+					setSwitch("power","on",request,null,function(){
+						setTimeout(function(){
+							$this.find(".btn").toggleClass("btn-mydefault").toggleClass("btn-mysuccess"); 
+						},1000);
+					});
+				}
+			}
+			
+		});
+		switchs.eq(1).on('click',function() {
+			var currentTime = new Date().getTime();
+			if(currentTime - lastClickTime > 500){	
+				lastClickTime = currentTime;
+				var request = {	
+						"src":mac, //发起请求的设备id, 一般为手机端和PC
+						"dest":cameraID, //请求目标的设备id，一般为摄像头
+						"config":
+						{
+							"alert":"", //on:表示打开功能，off：关闭功能
+							"schedule":cameraInfo.alert.schedule,
+							"days":cameraInfo.alert.days //重复周期，为从星期一到星期天的位组合，自左向右为星期一到星期日.
+						}
+					};
+				var $this =  $(this);
+				var isON =  $(this).find(".btn").eq(0).hasClass("btn-mysuccess");
+				$(this).find(".btn").toggleClass("btn-mydefault").toggleClass("btn-mysuccess");  
+				if(isON){//现在想要关闭
+					request.config.alert = "off";
+					setSwitch("alert","off",request,function(){
+						$("#alertSwitch div:eq(1)").removeClass("text-orange").addClass("text-grey");
+						$("#alertSwitch").off("click");
+					},function(){
+						setTimeout(function(){
+							$this.find(".btn").toggleClass("btn-mydefault").toggleClass("btn-mysuccess"); 
+						},1000);
+					});
+					
+				}else{
+					request.config.alert = "on";
+					setSwitch("alert","on",request,function(){
+						$("#alertSwitch div:eq(1)").removeClass("text-grey").addClass("text-orange");
+						$("#alertSwitch").on("click", function() {
+							window.location.href = "./timeSwitch.html";
+							localStorage.setItem("cameraSetting", "alertSwitch");
+						});
+					},function(){
+						setTimeout(function(){
+							$this.find(".btn").toggleClass("btn-mydefault").toggleClass("btn-mysuccess");
+						},1000);
+					});
+				}
+			}
+			
+		});
+	}
+//检测摄像升级
+	function checkUpgrade(){
+		dialog.show("检测中");
+		var request = {terminal_type:20, hardware_type:cameraInfo.version.hardware_type};
+		ois.getVersion(request,function(code, data){
+			//console.log(data);
+			var newVersion = data.version;
+			dialog.hide();
+			swal(
+					{   title: "最新版本："+newVersion,   
+					 text: "更新内容："+data.release_note,   
+					 showCancelButton: true,  
+					 confirmButtonColor: " #f56931",   
+					 confirmButtonText: "更新",  
+					 closeOnConfirm: true ,
+					 cancelButtonText:"取消",
+					 animation:false}, 
+					 function(){ 
+						 dialog.show("更新中");
+						 var request2 = {camera_id:cameraID, upgrade_url:data.upgrade_url}; 
+						 ois.upgradeCamera(request2,function(code,data){
+							 $("#version").html(newVersion);
+							 cameraInfo.version.soft_ver = newVersion;
+							 localStorage.setItem("currentCamera", JSON.stringify(cameraInfo));//本地存错的摄像头信息更新版本信息
+							 dialog.hide();
+							 
+						 },function(){
+							 dialog.hide();
+							 dialog.toast("更新失败，请再次尝试！");
+						 });
+						 }
+					 );
+		},function(code){
+			if(code == 680){
+				dialog.hide();
+				dialog.toast("暂无更新信息");
+			}
+		});
+	}
+	function getThisCamera(cameraID) {
+		ois.getOneCamera(userID,cameraID,function(code, data) {
+				cameraInfo = data.list[0];
+				localStorage.setItem("currentCamera", JSON.stringify(data.list[0]));
+				initPage();//回显信息在页面上
+			}, function(code) {
+					dialog.toast("获取摄像头信息失败");
+			})
+	}
+	function setSwitchState(obj,state){
+		if(state){
+			obj.find(".btn").eq(0).removeClass("btn-mydefault").addClass("btn-mysuccess");
+			obj.find(".btn").eq(1).removeClass("btn-mysuccess").addClass("btn-mydefault");
+		}else{
+			obj.find(".btn").eq(0).removeClass("btn-mysuccess").addClass("btn-mydefault");
+			obj.find(".btn").eq(1).removeClass("btn-mydefault").addClass("btn-mysuccess");
+		}
+	}
+	function setSwitch(item,value,request,success,fail){//item:是表示设置的什么定时开关：power/alert/record;value:表示是开/关
+		dialog.show("正在提交")
+		ois.setSwitch(request,function(code, data){
+			if(success){
+				success();
+			}
+			if(item == "power"){
+				if(request.config[item] == "on"){
+					cameraInfo[item].status = 1;
+					$("#cameraStatus").html("在线");
+				}else{
+					cameraInfo[item].status = -1;
+					$("#cameraStatus").html("关机");
+				}
+				/*  ois.getOneCamera(userID,cameraID,function(code, data) {
+					cameraInfo = data.list[0];
+					localStorage.setItem("currentCamera", JSON.stringify(data.list[0]));
+					initPage();//回显信息在页面上
+				}, function(code) {
+				})  */
+			}else{
+				cameraInfo[item].status = request.config[item] == "on" ? 1:0 ;
+			}
+			localStorage.setItem("currentCamera", JSON.stringify(cameraInfo));
+			dialog.hide();
+			dialog.toast("设置成功");
+			
+		},function(code){
+			if(fail){
+				fail();
+			}
+			dialog.hide();
+			if(code ==  623){
+				dialog.toast("摄像头离线了");
+			}else{
+				dialog.toast("设置失败");
+			}
+		});
+	}
+	function getQueryStr(str){  
+		var LocString=String(window.document.location.href);  
+		var rs = new RegExp("(^|)"+str+"=([^\&]*)(\&|$)","gi").exec(LocString), tmp;  
+	  
+		if(tmp=rs){  
+			return tmp[2];  
+		}  
+	  
+		// parameter cannot be found  
+		return "";  
+	}  
+	
+</script>
+</html>

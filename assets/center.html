@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimum-scale=1.0, maximum-scale=1.0">
+<meta name="format-detection" content="telephone=no">
+<title>个人中心</title>
+<link href="sw/style.css" rel="stylesheet" type="text/css">
+<link href="font-awesome-4.1.0/css/font-awesome.min.css" rel="stylesheet" type="text/css"/>
+<link rel="stylesheet" href="css/bootstrap.min.css"/>
+<link rel="stylesheet" href="css/sweetalert.css">
+<link rel="stylesheet" href="css/common.css"/>
+
+<script type="text/javascript" src="js/jquery-1.11.2.min.js"></script>
+<script type="text/javascript" src="js/iscroll-probe.js"></script>
+<script type="text/javascript" src="js/jsbridge.js"></script>
+<script src="js/ois.js"></script>
+<script src="js/sweetalert-dev.js"></script>
+<script type="text/javascript" src="js/dialog.js"></script>
+<style>
+.sweet-alert h2 {
+	font-size:18px;
+ }
+.sweet-alert p {
+	font-size:16px;
+} 
+</style>
+</head>
+<body >
+	
+<div class="header">
+	<div>
+		<div class="back"></div>
+		<div class='title'>个人中心</div>
+		<div class="plus"></div>			
+	</div>
+	
+</div><!-- /header -->
+	<div id="wrapper">
+		<div id="scroller">
+			<div class="content">
+				<ul class="list-group">
+					<li class="list-group-item" id="account" >我的账号：<span class="text-grey"></span></li>
+					<li class="list-group-item" id="appShow" style="display:none;">App版本：<span class="text-grey"id="appVersion2">1.0.0.0</span>
+					</li>
+					<li class="list-group-item" link="towCode" onclick="pageJump($(this).attr('link'))">我的二维码
+						<div class="pull-right " style="color: #f56931;">
+							<span class="icon-more icon-lg" ></span>
+						</div>
+					</li>
+					<li class="list-group-item" link="resetPassword" onclick="pageJump($(this).attr('link'))">修改密码
+						<div class="pull-right " style="color: #f56931;">
+							<span class="icon-more icon-lg" ></span>
+						</div>
+					</li>
+					<li class="list-group-item" id="order" link="order" onclick="pageJump($(this).attr('link'))" style="display:none;">订购产品类型
+						<div class="pull-right " style="color: #f56931;">
+							<span class="icon-more icon-lg" ></span>
+						</div>
+					</li>
+					<li class="list-group-item" id="orderproduct" onclick="window.location.href='order.html'" style="display:none;">订购
+						<div class="pull-right " style="color: #f56931;">
+							<span class="icon-more icon-lg" ></span>
+						</div>
+					</li>
+					<li class="list-group-item" id="consumeDetail" onclick="window.location.href='consumeDetail.html'" style="display:none;">消费明细
+						<div class="pull-right " style="color: #f56931;">
+							<span class="icon-more icon-lg" ></span>
+						</div>
+					</li>
+					<li class="list-group-item" id="mycamera" link="mycamera" onclick="pageJump($(this).attr('link'))" style="display:none;">我的摄像头
+						<div class="pull-right " style="color: #f56931;">
+							<span class="icon-more icon-lg" ></span>
+						</div>
+					</li>
+
+
+					<li class="list-group-item" id="appUpgrade" onclick="checkUpgrade()" style="display:none;">App升级
+						<div  class="pull-right"  style="color: #f56931;">
+							<span class="text-grey" style="position: relative;top: -3px;" id="appVersion">1.0.0.0</span>
+							<span class="icon-more icon-lg">
+						</div>
+					</li>
+					<li class="list-group-item" link="help" onclick="pageJump($(this).attr('link'))">帮助
+						<div class="pull-right " style="color: #f56931;">
+							<span class="icon-more icon-lg" ></span>
+						</div>
+					</li>
+					<li class="list-group-item" link="feedback" onclick="pageJump($(this).attr('link'))">意见反馈
+						<div class="pull-right " style="color: #f56931;">
+							<span class="icon-more icon-lg" ></span>
+						</div>
+					</li>
+					<!-- <li class="list-group-item" id="cameralistMode" onclick="switchCameralistMode()">摄像头列表显示方式
+						<div class="pull-right " style="color: #f56931;">
+							<span class="text-grey" style="position: relative;top: -3px;" id="modeValue"></span>
+							<span class="icon-more icon-lg" ></span>
+						</div>
+					</li> -->
+				</ul>
+				
+				<div onclick="logout()" class="btn-orange" style="margin-top:40px;">退出登录</div>
+			</div>
+			
+		</div>
+	
+	</div>
+	
+	
+	<div class="footer">
+		<div>
+		<span  onclick="window.location='main.html'"  class="icon-home"></span><br>
+		我的随看
+		</div>
+		
+		<div  onclick="window.location='message.html'">
+		<span class="icon-cloud" ></span><br>
+		消息中心
+		</div>
+		<div  class="sel"  _onclick="window.location='center.html'">
+		<span class="icon-user"></span><br>
+		个人中心
+		</div>
+	</div><!-- /footer -->
+</body>
+<script type="text/javascript">
+	if("jiangsu"== JSBridge.get("app_type")){
+		$("#orderproduct").show();
+		$("#mycamera").show();
+		$("#consumeDetail").show();
+	}else{
+		$("#order").show();
+	}
+
+	var myScroll;
+	var ois = new OIS();
+	var dialog = new Dialog();
+	var userID = JSBridge.get("currentUser");
+	var versionold = JSBridge.get("app_version");
+	//var listmode = JSBridge.get("cameralistMode");
+	var teminalType = JSBridge.terminal_type;
+	var lastClickTime = new Date().getTime();
+	
+	function init () {
+		$("#account span").html(userID);
+		/* if(listmode == "bigPicture"){
+			$("#modeValue").html("大图模式");
+		}else{
+			$("#modeValue").html("列表模式");
+		} */
+		
+		if(teminalType == 5){
+			$("#appShow").show();
+			$("#appVersion2").html(versionold);
+		}else{
+			$("#appUpgrade").show();
+			$("#appVersion").html(versionold);
+		}
+	
+	}
+	function logout(){	
+		var currentTime = new Date().getTime();
+		if(currentTime - lastClickTime > 500){	
+			lastClickTime = currentTime;
+			swal({
+				 title: "退出登录", 
+				 text:"退出后将无法继续观看摄像头，是否退出？",
+				 showCancelButton: true,  
+				 confirmButtonColor: "#f56931",   
+				 confirmButtonText: "确定",  
+				 cancelButtonText:"取消",
+				 animation:false
+			},function(){
+				 JSBridge.set("currentUser", "");
+				 JSBridge.write("userinfo", "");
+				 window.location = "index.html"
+			});
+		}	
+	}
+	function checkUpgrade(){
+		var currentTime = new Date().getTime();
+		if(currentTime - lastClickTime > 500){	
+			lastClickTime = currentTime;
+			var request = { terminal_type : JSBridge.terminal_type	};
+			ois.getVersion(request,function(code, data){
+				if(data.version != JSBridge.get('app_version')){
+					swal(
+							{   title: "最新版本："+data.version,   
+							 text: "更新内容："+data.release_note,   
+							 showCancelButton: true,  
+							 confirmButtonColor: " #f56931",  
+							 confirmButtonText: "下载",  
+							 closeOnConfirm: true ,
+							 cancelButtonText:"取消",
+							 animation:false}, 
+							 function(){ 
+								 JSBridge.upgrade(data.upgrade_url);
+								 }
+							 );
+				}else{
+					dialog.toast("当前版本为最新版本");
+				}
+				
+			},function(code){
+				dialog.toast("暂无更新信息");
+			});
+		}
+	}
+	/* function switchCameralistMode(){
+		var currentTime = new Date().getTime();
+		if(currentTime - lastClickTime > 500){	
+			lastClickTime = currentTime;
+			if(listmode == "bigPicture"){
+				JSBridge.set("cameralistMode","list");
+				$("#modeValue").html("列表模式");
+			}else{
+				JSBridge.set("cameralistMode","bigPicture");
+				$("#modeValue").html("大图模式");
+			}
+			listmode = JSBridge.get("cameralistMode");
+		}	
+	} */
+	function pageJump(setting){
+		window.location.href="./personalSetting.html?setting="+setting;
+	}
+	document.addEventListener('touchmove', function (e) { e.preventDefault(); }, false);
+	document.onselectstart = function() { return false; }
+	
+	var time= 0;
+	$(document).on('back', function(){
+		if(new Date().getTime() - time < 2000){
+			JSBridge.finish();	
+		}else{
+			dialog.toast("再按一次退出程序");
+			time= new Date().getTime();
+		}
+		
+		
+		/* swal(
+				{   
+				 title: "提示",   
+				 text: "确定退出?",   
+				 showCancelButton: true,  
+				 confirmButtonColor: "#f56931",  
+				 confirmButtonText: "确定",  
+				 cancelButtonText: "取消",  
+				 closeOnConfirm: true ,					 
+				 animation:false
+				 }, 
+				 function(){ 
+					 JSBridge.finish();					
+					 return;
+					 }
+				 ); */	
+			}	
+	);	
+ 	$(document).ready(function(){
+		init();
+		myScroll = new IScroll('#wrapper',{ mouseWheel: true ,click:true, probeType:1, bounce:true});
+	
+	});  
+ 	
+
+</script>
+</html>

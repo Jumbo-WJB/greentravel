@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimum-scale=1.0, maximum-scale=1.0">
+<title></title>
+
+<link href="sw/style.css" rel="stylesheet" type="text/css">
+<link href="css/common.css" rel="stylesheet" type="text/css">
+<link href="font-awesome-4.1.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+<style type="text/css">
+
+a:link,a:visited,a:hover{
+	color:white;
+	text-decoration:none; 
+	
+}
+body{	
+	background-image: url("imgs/bg.png");
+    background-repeat: no-repeat;
+	background-size:100%;
+}
+.header,.footer{
+	opacity :0.8;
+	position:fixed;
+	
+	
+}
+
+.header{
+	top:0px;
+}
+
+
+#scroller > .container{
+	margin:5px;
+}
+
+
+.footer{	
+	padding-top:15px;	
+	text-align:center;
+	color:white;	
+	font-size:18px;
+	width:100%;
+	position:fixed;
+	bottom:0px;
+	margin:0;
+	
+}
+.footer  span{
+	font-size:18px;
+}
+
+input {
+	line-height:40px;
+	font-size:16px;
+	width:95%;
+	margin:5px;
+	margin-bottom:10px;	
+	border:0px;
+	border-radius:1px;
+	padding-left:10px;
+}
+input.s{
+	width:40%;
+	line-height:40px;
+	
+}
+button.b1,button.b2{
+	border:1px solid #f56931;
+	border-radius:2px;
+	background-color:transparent;
+	line-height:30px;
+	font-size:16px;
+	color:#f56931;
+	line-height:40px;
+}
+button.b1{
+	margin-top:10px;
+	float:right;	
+	
+	margin-right:10px;
+	width:45%;
+}
+.btnDisable{
+	color:gray;
+	border:1px solid gray;
+}
+button.b2{	
+	
+	margin-top:20%;
+	width:90%;
+	background-color:white;
+	border:0px;	
+}
+</style>
+<script type="text/javascript" src="js/iscroll-probe.js"></script>
+<script type="text/javascript" src="js/jquery-1.11.2.min.js"></script>
+<script type="text/javascript" src="js/jsbridge.js"></script>
+<script type="text/javascript" src="js/ois.js"></script>
+<script type="text/javascript" src="js/pulldownup.js"></script>
+<script type="text/javascript" src="js/dialog.js"></script>
+<script type="text/javascript">
+
+var ois = new OIS();
+var pulldownup = null;;
+var dialog = new Dialog();
+
+
+
+function regist(){
+	//		
+	var request = 
+	{
+		
+		
+	}
+	
+	request.user = $("#user").val();
+	request.phone= request.user;
+	request.password = $("#password").val();		
+	request.password2 = $("#password2").val();		
+	request.smscode = $("#exampleInputAmount").val();		
+	//alert(JSON.stringify(request))
+	//$.support.cors = true;
+	if(request.user == '' || request.password == ''){
+		dialog.toast("用户名/口令不能为空!")			
+		return;
+	}
+	if(request.password2== ''){
+		dialog.toast("确认密码不能为空!")			
+		return;
+	}
+	if(request.password != request.password2){
+		dialog.toast("两次口令不一致!")			
+		return;
+	}
+	
+	if(request.password.length<6){
+		dialog.toast("密码长度不能少于6位")			
+		return;
+	}
+	
+	if(request.smscode == ''){
+		dialog.toast("验证码不能为空")		
+		return;
+	}
+	
+	dialog.show(); 		
+	
+	ois.resetLoginPassword(
+		request.user,
+		request.phone,
+		request.smscode,		
+		request.password,
+		function(code, data){			
+			dialog.hide();
+			dialog.toast("密码重置成功!")
+			setTimeout(function(){
+				window.location = "login2.html"
+			}, 2000)
+			
+		}, 
+		function(code){			
+			dialog.toast(ois.getinfoBycode(code));
+			dialog.hide();				
+	})
+}
+
+var timedown = function(jqObj){
+	var time = 60;
+	var mHanler = setInterval(function(){
+		jqObj.text(--time)			
+		if(time == 0) {
+			clearInterval(mHanler);
+			jqObj.attr('disabled', false); 
+			jqObj.removeClass('btnDisable');
+			jqObj.text('获取激活短信'); 
+		}
+	}, 1000);
+	
+}
+
+
+function uiinit(){
+	$('#btnAuthcode').on('click', function(event){				
+		var that = this;
+		event.preventDefault();			
+		var phone = $("#user").val();
+		if(phone== ''){
+			dialog.toast("手机号不能为空");
+			return;
+		}
+		if(!/^\d{11}$/.test(phone)){
+			dialog.toast("请填写正确的手机号");				
+			return;
+		}		
+		$(that).attr('disabled', true); 
+		$(that).addClass('btnDisable');	
+		dialog.show();
+		ois.getResetAuthcode(		
+			phone,				
+			function(code, data){				
+				timedown($(that));
+				dialog.hide();				
+			}, 
+			function(code){
+				
+				dialog.toast(ois.getinfoBycode(code));
+				$(that).attr('disabled', false); 
+				$(that).removeClass('btnDisable');	
+				dialog.hide();				
+		})
+	});	
+	//$(".logo")[0].style.webkitTransition = 'all ease-out 30s';
+	//$(".logo")[0].style.webkitTransform = "translate3D(0,60px,200px)";
+}	
+function loaded () {	
+	$(document).off('userdisable');
+	uiinit();
+	
+	$("#backBtn").on("click", function(){
+		window.location.href= "login2.html";
+	});
+	
+	
+	var clickcount = 0, lastclicktime = 0;
+	$('.title').on('click', function(){
+		
+		if(lastclicktime == 0)
+		   lastclicktime = new Date().getTime();
+		if(new Date().getTime() - lastclicktime < 1000){
+			
+			lastclicktime = new Date().getTime();
+			clickcount++;					
+		}else{
+			clickcount = 0;
+		}
+		
+		if(clickcount>=5){			
+			$("#oiscfg").show();		
+			
+		}
+	})
+	$("#btnois").on("click", function(){
+		JSBridge.set("ois_ip", $("#ois_sev").val())
+		JSBridge.set("ois_port", $("#ois_port").val())
+		window.location = "index.html";
+	})
+}
+
+document.addEventListener('touchmove', function (e) { e.preventDefault(); }, false);
+document.onselectstart = function() { return false; }
+$(document).on("back",function(){
+	$("#backBtn").trigger("click");
+});
+
+</script>
+
+
+</head>
+<body onload="loaded()">
+
+<div class="header">
+	<div>
+		<div id="backBtn" class="back"><span  class="icon-back"></span></div>
+		<div class='title'>重置密码</div>
+		<div class="plus"></div>			
+	</div>
+	
+</div><!-- /header -->
+
+
+<div id="wrapper">
+	<div id="scroller">
+		<div class="container">
+			<input  type="tel" id="user" placeholder="请输入手机号">
+			
+			<input type="password" id="password" placeholder="请设置密码">
+			<input type="password" id="password2" placeholder="请再次输入密码">
+			<div>
+				<input class="s"  id="exampleInputAmount" type="text" placeholder="请输入验证码">
+				<button class="b1"  id="btnAuthcode">获取激活短信</button>		
+				
+			</div>
+			<div style="text-align:center;">
+				<button class="b2" onclick="regist()">确定</button>		
+			</div>
+		</div>
+	</div>
+</div>
+
+
+<div id="oiscfg" style="display:none;position:absolute;bottom:100px;z-index:100;background-color:gray">
+	server <input id="ois_sev" value="172.16.">	port <input id="ois_port" value="5000">
+	<input type="button" value="保存" id="btnois">	
+</div>
+
+</body>
+</html>

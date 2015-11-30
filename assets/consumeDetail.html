@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+	
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimum-scale=1.0, maximum-scale=1.0">
+	<title>消费明细</title>
+	<link href="sw/style.css" rel="stylesheet" type="text/css">
+	<link href="font-awesome-4.1.0/css/font-awesome.min.css" rel="stylesheet" type="text/css"/>
+	<link rel="stylesheet" href="css/bootstrap.min.css"/>
+	<link href="css/scroll.css" rel="stylesheet" type="text/css">
+	<link rel="stylesheet" href="css/common.css"/>
+
+	<style type="text/css">
+		html,body{
+
+			font-size: 16px;
+			color: #888888;
+		}
+		.detailLine{
+			
+			font-size: 13px;
+			padding-top:10px;
+			padding-bottom:10px;
+			border-bottom: 1px solid gray;
+		}
+		.row{
+			word-break:break-all;
+		}
+		
+	</style>
+
+</head>
+<body>
+	<div>
+
+		<div class="header">
+			<div>
+				<div class="back" id="backTopc"><span class="icon-back"></span></div>
+				<div id="settingTitle" class="title">消费明细</div>
+			</div>
+		</div>
+
+
+		<div id="wrapper" style="bottom:20px;">
+
+			<div id="scroller">
+				<div id="pullDown" class="ub ub-pc c-gra">  			
+					<div class="pullDownLabel">下拉刷新</div>  
+				</div>  
+				<div class="row" style="margin-top:10px; font-weight:bold;">
+		    		
+					<div class="col-lg-2 col-md-2 col-sm-2 col-xs-2" align="center">日期</div>
+					<div class="col-lg-3 col-md-3 col-sm-3 col-xs-3" align="center">产品包</div>
+					<div class="col-lg-3 col-md-3 col-sm-3 col-xs-3" align="center">摄像头</div>
+					<div class="col-lg-2 col-md-2 col-sm-2 col-xs-2" align="center">金额</div>
+					<div class="col-lg-2 col-md-2 col-sm-2 col-xs-2" align="center">状态</div>
+
+
+
+		  		</div>
+				<div id="detailPanel">
+					
+					
+
+
+				</div>
+				<div id="pullUp" class="ub ub-pc c-gra">  
+					<div class="pullUpIcon"></div>  
+					<div class="pullUpLabel">上拉显示更多...</div>  
+				</div>  
+				
+			</div>
+		</div>
+
+	
+
+	</div>
+
+	
+
+
+	<script type="text/javascript" src="js/iscroll-probe.js"></script>
+	<script type="text/javascript" src="js/jquery-1.11.2.min.js"></script>
+	<script type="text/javascript" src="js/jsbridge.js"></script>
+	<script type="text/javascript" src="js/ois.js"></script>
+	<script type="text/javascript" src="js/pulldownup.js"></script>
+	<script type="text/javascript" src="js/dialog.js"></script>
+	<script type="text/javascript">
+		var ois = new OIS();
+		var pulldownup = null;;
+		var dialog = new Dialog();
+		var userid = JSBridge.get("currentUser");
+		document.addEventListener('touchmove', function (e) { e.preventDefault(); }, false);
+		document.onselectstart = function() { return false; }
+
+		
+		$(document).ready(function(){
+			dialog.show("加载中");
+			loadConsumeDetail(function(){
+				dialog.hide();
+				pulldownup.refresh(); 
+			});
+			pulldownup = new Pulldownup(loadConsumeDetail, null);
+			$("#backTopc").on("click", function(){
+				window.location.href="./center.html";
+			});
+
+		});
+
+		function loadConsumeDetail(callback){
+
+			ois.getConsumeDetail(userid, function(code, data){
+				var conn= [];
+				if(data && data.length> 0){
+	        		var details= data;
+	        		var date= new Date();
+	        		
+	        		$.each(details, function(i, detail){
+
+	        			date.setTime(detail.utc*1000);
+							
+	        			var type= detail.type;
+	        			if(type== 1){
+	        				type= '充值';
+	        			}else if(type== 2){
+	        				type= '购买';
+	        			}else if(type== 3){
+	        				type= '退款';
+	        			}
+	        			
+	        			var status= detail.status;
+	        			if(status== 0){
+	        				status= '订购未支付';
+	        			}else if(status== 1){
+	        				status= '支付成功';
+	        			}else if(status== 2){
+	        				status= '支付失败';
+	        			}else if(status== 3){
+	        				status= '已取消';
+	        			}
+	        			conn.push('<div class="row detailLine">');
+	        			conn.push('<div class="col-lg-2 col-md-2 col-sm-2 col-xs-2" align="center">'+date.Format('yyyyMMddhhmm')+'</div>');
+						conn.push('<div class="col-lg-3 col-md-3 col-sm-3 col-xs-3" align="center">'+type+'&nbsp;'+detail.service_name+'</div>');
+						conn.push('<div class="col-lg-3 col-md-3 col-sm-3 col-xs-3" align="center">'+detail.camera_name+'</div>');
+						conn.push('<div class="col-lg-2 col-md-2 col-sm-2 col-xs-2" align="center">'+detail.payment+'</div>');
+						conn.push('<div class="col-lg-2 col-md-2 col-sm-2 col-xs-2" align="center">'+status+'</div>');
+	        			conn.push('</div>');
+	        		});
+	        	}else{
+	        		conn.push('<div style="margin-top: 10px;" align="center">暂无记录</div>');
+	        	}
+	        	$('#detailPanel').html(conn.join(''));
+	        	var fill = $("#wrapper").height() - $("#detailPanel").height()			
+				if(fill >0 ) {
+					$('#detailPanel').append('<div style="height:' + (fill+5) + 'px"></div>');
+				}
+				if(callback){
+					callback();
+				}
+			},function(code){
+				$('#detailPanel').html('<div style="margin-top: 10px;" align="center">暂无记录</div>');
+				if(callback){
+					callback();
+				}
+			});
+			
+		}
+
+		$(document).on("back",function(){
+			$("#backTopc").trigger("click");
+		});
+
+
+		
+		// setParam('{"cameraId":"8140-01CC-10000006"}');
+	
+
+		// 对Date的扩展，将 Date 转化为指定格式的String 
+		// 月(M)、日(d)、小时(h)、分(m)、秒(s)、季度(q) 可以用 1-2 个占位符， 
+		// 年(y)可以用 1-4 个占位符，毫秒(S)只能用 1 个占位符(是 1-3 位的数字) 
+		// 例子： 
+		// (new Date()).Format("yyyy-MM-dd hh:mm:ss.S") ==> 2006-07-02 08:09:04.423 
+		// (new Date()).Format("yyyy-M-d h:m:s.S")      ==> 2006-7-2 8:9:4.18 
+		Date.prototype.Format = function(fmt) 
+		{ //author: meizz 
+		  var o = { 
+		    "M+" : this.getMonth()+1,                 //月份 
+		    "d+" : this.getDate(),                    //日 
+		    "h+" : this.getHours(),                   //小时 
+		    "m+" : this.getMinutes(),                 //分 
+		    "s+" : this.getSeconds(),                 //秒 
+		    "q+" : Math.floor((this.getMonth()+3)/3), //季度 
+		    "S"  : this.getMilliseconds()             //毫秒 
+		  }; 
+		  if(/(y+)/.test(fmt)) 
+		    fmt=fmt.replace(RegExp.$1, (this.getFullYear()+"").substr(4 - RegExp.$1.length)); 
+		  for(var k in o) 
+		    if(new RegExp("("+ k +")").test(fmt)) 
+		  fmt = fmt.replace(RegExp.$1, (RegExp.$1.length==1) ? (o[k]) : (("00"+ o[k]).substr((""+ o[k]).length))); 
+		  return fmt; 
+		}
+
+		
+	</script>
+
+</body>
+</html>

@@ -1,0 +1,22 @@
+<LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center_horizontal"
+        >
+    <ViewFlipper android:id="@+id/main_flipper"
+                 android:layout_width="match_parent"
+                 android:layout_height="0dp"
+                 android:layout_weight="1"
+                 android:persistentDrawingCache="animation"
+                 android:flipInterval="1000"
+                 
+                >
+        <include layout="@layout/camera_add_mode"/>
+        <include layout="@layout/camera_add"/>
+        <include layout="@layout/camera_add_wifi"/>
+        
+    </ViewFlipper>
+
+</LinearLayout>

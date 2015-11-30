@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimum-scale=1.0, maximum-scale=1.0">
+
+<title></title>
+<link href="sw/style.css" rel="stylesheet" type="text/css">
+<link href="css/common.css" rel="stylesheet" type="text/css">
+<link href="css/scroll.css" rel="stylesheet" type="text/css">
+<link href="font-awesome-4.1.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+<style type="text/css">
+#wrapper{
+	background-color:black;
+}
+.all_container{
+	margin:5px;
+	margin-left:10px;
+    border-left:1px solid #f56931;    
+}
+
+.item{
+	padding:5px;	
+	border-radius:2px;			
+	padding-bottom:10px;
+	position:relative;	
+	border-bottom: 1px solid #f56931;    
+}
+.item > .label{
+	position:relative;
+	left:-12px;	
+	font-size:16px;	
+	color:#f56931;
+	margin-bottom:5px;
+}
+
+.item > .chkbox{
+	display:none;
+	position:absolute;	
+	top:35px;	
+	left:10px;
+	color:white;
+	height:24px;
+	width:50px;
+	font-size:24px;
+}
+
+.item > .thumb{
+	width:100%;
+	height:180px;	
+}
+
+#info{
+	text-align:center;
+	margin:5px;
+	font-size:14px;
+	color:gray;
+}
+#info i{
+	
+	font-size:16px;
+	color:#0066FF;
+}
+/* .back{
+	position:absolute;
+	left:5px;	
+	top:13px;
+	font-size:14px;
+}  */
+a:link,a:visited,a:hover{
+	color:white;
+	text-decoration:none; 
+	
+}
+.del{
+	
+	position:absolute;
+	right:7px;	
+	top:12px;
+	padding-top:5px;	
+	font-size:14px;	
+	color:white;
+}
+.delaction{	
+	display:none;
+	position:absolute;
+	right:7px;	
+	top:12px;
+	padding-top:5px;	
+	font-size:14px;	
+	color:white;
+}
+.clearall{
+	display:none;
+	padding-top:5px;
+	position:absolute;
+	z-index:400;
+	left:5px;
+	background-color:#f56931;
+	text-align:center;
+	bottom:65px;
+	height:30px;
+	right:5px;
+	font-size:16px;	
+	color:white;	
+}
+#totalinfo{
+	text-align: center;
+	margin: 5px;
+	font-size: 14px;
+	color: gray;
+}
+</style>
+<script type="text/javascript" src="js/util.js"></script>
+<script type="text/javascript" src="js/jquery-1.11.2.min.js"></script>
+<script type="text/javascript" src="js/ois.js"></script>
+<script type="text/javascript" src="js/jsbridge.js"></script>
+<script type="text/javascript" src="js/iscroll-probe.js"></script>
+<script type="text/javascript" src="js/jquery.lazyload.js"></script>
+<script type="text/javascript" src="js/dialog.js"></script>
+<script type="text/javascript">
+var ois = new OIS();
+
+var myScroll ;
+var dialog = new Dialog();
+var cameraid;
+function getQueryStr(str){  
+	var LocString=String(window.document.location.href);  
+	var rs = new RegExp("(^|)"+str+"=([^\&]*)(\&|$)","gi").exec(LocString), tmp;  
+  
+	if(tmp=rs){  
+		return tmp[2];  
+	}  
+  
+	// parameter cannot be found  
+	return "";  
+}  
+
+/**
+ * 构建摄像头告警信息
+ *@url  url
+ *@time time 
+ */
+function buildInfo(file, url, time){
+	var html = [];	
+	
+	html.push('<div class="item">')	
+		html.push('<div class="label">')				
+		html.push('<i class="fa fa-circle"></i>&nbsp;&nbsp;'+ new Date(parseInt(time*1000)).Format("MM-dd hh:mm:ss") + '&nbsp;画面变化')		
+		html.push('</div>')				
+		html.push('<div mysel="0" cfile="' +  file + '" class="chkbox"><i class="fa fa-square-o"></i></div>')
+		html.push('<div class="thumb">')		
+		//url = "imgs/test.jpg"
+		html.push('<img width=100% height=180 class="lazy" data-original="' + url + '">')
+		html.push('</div>')				
+	html.push('</div>')	
+	
+	/**
+	html.push('<div class="col-sm-6 col-md-3">')		
+	html.push('<a href="#" class="thumbnail">');         
+	//html.push('<img class="lazy" data-original="imgs/test.jpg">')	
+	html.push('<img class="lazy" data-original="' + url + '">')	
+	html.push('</a>');         
+	html.push('</div>')	
+	*/
+	
+	return html.join('');
+}
+
+function updatelist(onchange){
+	
+	console.log("prepare cameralist" + cameraid);
+	ois.getAlert(
+		cameraid,
+		function(code, data){
+			
+			//alert(JSON.stringify(data));
+			var list = data;
+			var output = [];
+			//如果没有数据，直接返回上一级
+			if(list.length == 0 ) {
+				window.location = "message.html"
+				return;
+			}
+			//增加告警图片的总的数量
+			$("#totalinfo").show();
+			$("#totalinfo span").text(list.length);
+			
+			output.push('<div class="all_container">')
+			for(var i = 0; i < list.length; i++){
+				var item = list[i];		
+				var url = item.file_name.replace(/\/(\d+).jpg/,"/$1.thumb.jpg")
+				
+				output.push(buildInfo(item.file_name, ois.server + "/" + url, item.start_utc))
+				//output.push(item.base.status)
+			}
+			output.push('</div>')
+			$('#msglist').html(output.join(""));
+			
+			$('.chkbox,img').off('click');			
+			$('.chkbox,img').on('click', function(e){					
+				if($(".clearall").css('display') == 'none') return;				
+				var elem = $(this);
+				if(!e.currentTarget.getAttribute('mysel'))					
+					elem = $(this).parent().parent().find('[mysel]')
+				if(elem.attr("mysel") == "1"){
+					elem.attr("mysel", "0")
+					elem.html('<i class="fa fa-square-o"></i>')
+					
+				}else{
+					elem.attr("mysel","1")
+					elem.html('<i class="fa fa-check-square-o"></i>')
+					
+
+				}
+				return true;
+			});
+			
+			
+			if(onchange) onchange(true);
+		},
+		function(code){
+			dialog.toast(ois.getinfoBycode(code))
+			if(onchange) onchange(false);
+		}
+	)
+}
+document.addEventListener('touchmove', function (e) { e.preventDefault(); }, false);
+
+function loadData(){
+	dialog.show();
+	updatelist(function(){
+		dialog.hide();
+		myScroll.refresh();
+		$("img.lazy").lazyload({ effect : "fadeIn",threshold : 500,failure_limit : 10,skip_invisible : false});
+		 
+	});
+}
+
+$(function(){
+	cameraid = getQueryStr("id");	
+	var onScroll = function(){		
+		$("#wrapper").trigger('scroll');
+	}
+	myScroll = new IScroll('#wrapper', { mouseWheel: true ,click:true, probeType:1, bounce:true});
+	//myScroll.on('scroll', onScroll);
+	myScroll.on('scrollEnd', onScroll);	
+	loadData();
+	
+	$(".del").on('click', function(){
+		$(this).hide()
+		$(".chkbox").show();
+		$(".delaction").show();		
+		$(".clearall").show();		
+		
+	});
+	
+	$("#actCancel").on('click', function(){	
+		$("[mysel=1]").trigger("click");
+		//$("[mysel]").attr('mysel', "0")
+		//$("[mysel]").html('<i class="fa fa-square-o"></i>')
+		$(".chkbox").hide();
+		$(".delaction").hide();
+		$(".clearall").hide();
+		$(".del").show();
+		
+		
+	});
+	
+	$("#actDel").on('click', function(){		
+		//便利所有msel
+		var filelist = [];
+		$("[mysel='1']").each(function(){
+			filelist.push($(this).attr("cfile"));
+		});
+		if(filelist.length == 0) {
+			dialog.toast("请至少选择一张图片!")
+			return;
+		}
+		ois.delAlert(JSBridge.get("currentUser"), cameraid, filelist, 
+			function(code,data){
+				//alert(code);
+				//alert(JSON.stringify(data))
+				loadData();
+				$(".chkbox").hide();		
+				$(".clearall").hide();
+				$(".delaction").hide();
+				$(".del").show();
+			},
+			function(code){
+				dialog.toast("网络错误");
+			}
+		)
+		
+		
+	});
+	
+	
+	$(".clearall").on('click', function(){		
+		$("[mysel=0]").each(function(){
+			$(this).attr("mysel","1")
+			$(this).html('<i class="fa fa-check-square-o"></i>')
+		});		
+	});
+	
+	
+	
+})
+
+$(document).on('back', function(){
+	window.location = "message.html";
+})
+
+document.onselectstart = function() { return false; } 
+</script>
+
+
+</head>
+<body>
+
+	<div class="header">
+		<div>		
+		<div class="back"><a href="message.html"><span  class="icon-back"></span></a></div>
+		<div class="title">告警消息</div>		
+		<div class="del"><a href="#">删除</a></div>		
+		<div class="delaction"><a href="#" id="actDel">确定</a>&nbsp;&nbsp;<a href="#" id="actCancel">取消</a></div>
+		
+		</div>
+	</div><!-- /header -->
+
+
+	<div id="wrapper">		
+		<div id="scroller">				
+			<div id="totalinfo" style="display:none;">
+				<i class='fa fa-warning'></i>共发现 <span >100</span> 告警图片
+			</div>  
+			<div id="msglist">
+			</div>
+		</div>
+	</div>
+
+	
+<div class="footer">
+	<div>
+	<span onclick="window.location='main.html'"  class="icon-home"></span><br>
+	我的随看
+	</div>
+	
+	<div  class="sel"  _onclick="window.location='message.html'">
+	<span class="icon-cloud" ></span><br>
+	消息中心
+	</div>
+	<div  onclick="window.location='center.html'">
+	<span class="icon-user"></span><br>
+	个人中心
+	</div>
+</div><!-- /footer -->
+	
+	<div class="clearall">
+		<a href="#">全选</a>
+	</div>
+</body>
+</html>

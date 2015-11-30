@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimum-scale=1.0, maximum-scale=1.0">
+<title></title>
+<link href="sw/style.css" rel="stylesheet" type="text/css">
+<link href="css/common.css" rel="stylesheet" type="text/css">
+<link href="font-awesome-4.1.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+<style type="text/css">
+
+a:link,a:visited,a:hover{
+	color:white;	
+	
+}
+body{	
+	background-image: url("imgs/bg.png");
+    background-repeat: no-repeat;
+	background-size:100%;
+}
+.footer{
+	opacity :0.8;	
+	
+}
+.footer  span{
+	font-size:18px;
+}
+
+.header{
+	background-color:transparent;
+	margin-top:60px;
+	text-align:center;
+}
+
+#wrapper{	
+	margin-top:100px;	
+}
+#scroller{
+	padding:5px;
+}
+.bg{
+	position:absolute;
+	left:0px;
+	right:0px;
+	top:0px;
+	bottom:0px;	
+	width:100%;
+	height:100%;	
+	z-index:-10;
+}
+.bg > img{
+	width:100%;	
+	position:relative;
+	top:-60px;
+	height:100%;
+}
+.bg .mask{
+	
+	position:absolute;
+	left:0px;
+	right:0px;
+	top:0px;
+	bottom:0px;		
+}
+
+
+.footer{	
+	margin:0px;
+	padding-top:10px;
+	text-align:center;
+	color:white;	
+	font-size:18px;
+	width:100%;
+	font-size:0px;
+	z-index:30;
+	position:fixed;
+	bottom:0px;
+}
+
+
+input {
+	line-height:40px;
+	font-size:16px;
+	width:95%;
+	margin:5px;
+	margin-bottom:10px;	
+	border:0px;
+	border-radius:1px;
+	padding-left:10px;
+}
+input.s{
+	width:40%;
+}
+button.b1,button.b2{
+	border:1px solid #f56931;
+	border-radius:2px;
+	background-color:transparent;
+	line-height:40px;
+	font-size:16px;
+	color:#f56931;
+	
+}
+
+.btnDisable{
+	color:gray;
+	border:1px solid gray;
+}
+button.b2{	
+	margin-top:20%;
+	width:90%;
+	background-color:white;
+	border:0px;	
+	
+}
+</style>
+<script type="text/javascript" src="js/iscroll-probe.js"></script>
+<script type="text/javascript" src="js/jquery-1.11.2.min.js"></script>
+<script type="text/javascript" src="js/jsbridge.js"></script>
+<script type="text/javascript" src="js/ois.js"></script>
+<script type="text/javascript" src="js/pulldownup.js"></script>
+<script type="text/javascript" src="js/dialog.js"></script>
+<script type="text/javascript">
+	var dialog;
+	dialog = new Dialog();
+	
+	
+	var ois = new OIS();
+	
+	$(document).on("jiangsutokenresult", function(event, data){ 
+		var res = JSON.parse(data);
+		var token= res.hasOwnProperty("token") ? res.token : "";
+		//dialog.toast("--token--"+token);
+		if(token== null || token== ""){
+			dialog.hide();
+			dialog.toast("请安装并登录和家庭应用后,再点登录");
+		}else{
+			login(token);
+		}
+	});
+	
+	function getToken(){
+		dialog.show("登录中");
+		JSBridge.getJiangSutoken(); //异步， 通过jiangsutokenresult得到token
+		
+		//login("6D85F85455A940259CB6DAD85911BDB5@js.ac.10086.cn")  
+	}
+	
+	function login(jstoken){
+		
+		ois.getUserFromJSToken(jstoken, function(code, data){
+			var request= {
+				user: data.hasOwnProperty("user_id")? data.user_id : "",
+				password: data.hasOwnProperty("password")? data.password : ""
+			}
+			
+			ois.login(
+				request,
+				function(code, data){
+					dialog.hide();				
+					JSBridge.write("userinfo", JSON.stringify(request));
+					JSBridge.set("currentUser", request.user);
+					var token= data.token;
+					JSBridge.set("token", token);
+					window.location = "main.html"
+				}, 
+				function(code){
+					dialog.hide();							
+					dialog.toast(ois.getinfoBycode(code));
+			})
+			
+			
+		}, function(code){
+			dialog.hide();							
+			dialog.toast(ois.getinfoBycode(code));
+		});
+		
+		/* return;
+		var request = 
+		{
+			terminal_id : "luodong",
+			terminal_type : 2
+		}
+		
+		request.user = $("#user").val();
+		request.password = $("#password").val();		
+		//alert(JSON.stringify(request))
+		//$.support.cors = true;
+		if(request.user == '' || request.password == ''){
+			dialog.toast("用户名/口令不能为空!")			
+			return;
+		}
+		
+		 		
+		
+		ois.login(
+			request,
+			function(code, data, jqXHR){
+				dialog.hide();				
+				JSBridge.write("userinfo", JSON.stringify(request));
+				JSBridge.set("currentUser", request.user);
+				var token= jqXHR.getResponseHeader("Token");
+				JSBridge.set("token", token);
+				window.location = "main.html"
+			}, 
+			function(code){
+				dialog.hide();							
+				dialog.toast(ois.getinfoBycode(code));
+		}) */
+		
+		
+	}
+	
+	$(function(){
+		$(document).off('userdisable');		
+		
+		var clickcount = 0, lastclicktime = 0;
+		$('.title').on('click', function(){
+			
+			if(lastclicktime == 0)
+			   lastclicktime = new Date().getTime();
+			if(new Date().getTime() - lastclicktime < 1000){
+				
+				lastclicktime = new Date().getTime();
+				clickcount++;					
+			}else{
+				clickcount = 0;
+			}
+			
+			if(clickcount>=5){			
+				$("#oiscfg").show();		
+				
+			}
+		});
+		$("#btnois").on("click", function(){
+			JSBridge.set("ois_ip", $("#ois_sev").val())
+			JSBridge.set("ois_port", $("#ois_port").val())
+			window.location = "index.html";
+		})
+	})
+document.addEventListener('touchmove', function (e) { e.preventDefault(); }, false);
+document.onselectstart = function() { return false; }
+
+
+</script>
+
+
+</head>
+<body>
+
+<div class="header">
+	<!-- <div class="title">		
+		<div style="margin-right:10px;font-size:32px;color:red;display:inline"><span style="font-size:34px;color:#f56931" class="icon-user"></span></div>
+		<div style="display:inline;font-size:24px">登录</div>		
+	</div> -->
+	
+</div><!-- /header -->
+
+
+<div id="wrapper">
+	<div id="scroller">		
+		
+		<div class="title" align="center">		
+			<div style="margin-right:10px;font-size:32px;color:red;display:inline;position:relative;top:5px">
+				<span style="font-size:34px;color:#f56931" class="icon-user"></span>
+			</div>
+			<div style="display:inline;font-size:24px;color:white;">登录</div>		
+		</div>
+		<div style="text-align:center;">
+			<button class="b2"  onclick="getToken()">登录</button>		
+		</div>
+	</div>
+</div>
+
+<div id="oiscfg" style="display:none;position:absolute;top:80px;z-index:100;background-color:gray">
+	server <input id="ois_sev" value="172.16.">	port <input id="ois_port" value="5000">
+	<input type="button" value="保存" id="btnois">	
+</div>
+
+
+
+</body>
+</html>

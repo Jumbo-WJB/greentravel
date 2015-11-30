@@ -1,0 +1,140 @@
+
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimum-scale=1.0, maximum-scale=1.0">
+
+<title>iScroll demo: simple</title>
+<!-- 新 Bootstrap 核心 CSS 文件 -->
+<link rel="stylesheet" href="css/bootstrap.min.css">
+<!-- 可选的Bootstrap主题文件（一般不用引入） -->
+<link rel="stylesheet" href="css/bootstrap-theme.min.css">
+
+<link href="css/common.css" rel="stylesheet" type="text/css">
+<script type="text/javascript" src="js/jquery-1.11.2.min.js"></script>
+<!-- 最新的 Bootstrap 核心 JavaScript 文件 -->
+<script src="js/bootstrap.min.js"></script>
+<link href="font-awesome-4.1.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+<link href="css/metro-bootstrap.min.css" rel="stylesheet" type="text/css">
+<script type="text/javascript" src="js/dialog.js"></script>
+<script src="js/ois.js"></script>
+<script src="js/jsbridge.js"></script>
+<style>
+
+
+</style>
+<script>
+	var dialog;
+	dialog = new Dialog();
+	function getQueryStr(str){  
+		var LocString=String(window.document.location.href);  
+		var rs = new RegExp("(^|)"+str+"=([^\&]*)(\&|$)","gi").exec(LocString), tmp;  
+	  
+		if(tmp=rs){  
+			return tmp[2];  
+		}  
+	  
+		// parameter cannot be found  
+		return "";  
+	}  
+	
+	var ois = new OIS();
+	
+	
+	
+	function login(){
+		//		
+		var request = 
+		{
+			terminal_id : "luodong",
+			terminal_type : 2
+		}
+		
+		request.user = $("#user").val();
+		request.password = $("#password").val();		
+		//alert(JSON.stringify(request))
+		//$.support.cors = true;
+		if(request.user == '' || request.password == ''){
+			dialog.toast("用户名/口令不能为空!")			
+			return;
+		}
+		
+		dialog.show("登录中"); 		
+		
+		ois.login(
+			request,
+			function(code, data){
+				dialog.hide();				
+				JSBridge.write("userinfo", JSON.stringify(request));
+				JSBridge.set("currentUser", request.user);
+				window.location = "main.html"
+			}, 
+			function(code){
+				dialog.hide();			
+				
+				dialog.toast("网络或服务器异常，无法登录")				
+		})
+		
+		
+	}
+	$(function(){
+		//首次注册时默认携带用户名
+		var user = getQueryStr("user")
+		if(user != ""){
+			$("#user").val(user);
+		}
+		//dialog.toast("网络或服务器异常，无法登录")
+		
+		cancelUserDisableListener();
+		
+	})
+</script>
+<body>
+	<div class="panel  panel-default">
+	   <div class="panel-heading">
+		  <div class="container-fluid" style="padding-left:0px">
+			<div class="row">
+				<div class="col-xs-2"  style="font-size:18px"><a href="index.html"><i class="fa fa-angle-left"></i></a></div>
+				<div class="col-xs-9 text-center" style="font-size:16px">用户登录</div>
+			</div>
+		  </div>
+	  </div>
+	  <div class="panel-body">
+		
+		<div id="msg" style="color:#990033;display:none;font-size:14px;margin-bottom:10px">
+			<i class="fa fa-exclamation-triangle"></i><span>用户名或口令错误</span>
+		</div>
+		
+		<form class="form-inline" action="main.html" method="post">
+		  <div class="form-group">  
+			<div class="input-group">
+			  <div class="input-group-addon"><i class="fa fa-user"></i></div>
+			  <input type="text" class="form-control" id="user" value="18600366235" placeholder="手机号">      
+			</div>
+		  </div>
+		  <div class="form-group">  
+			<div class="input-group">
+			  <div class="input-group-addon"><i class="fa fa-bars"></i></div>
+			  <input type="password" class="form-control" value="123456" id="password" placeholder="密码">      
+			</div>
+		  </div>			  
+		</form>
+		<div class="container-fluid">
+			<div class="row">
+				<div class="col-md-12" style="text-align:right">
+				<a href="javascript:forget()">忘记密码?</a>
+				</div>				
+			</div>
+			<div class="row">
+				<div class="col-md-12"><button style="width:100%" type="button" onclick="login()" class="btn btn-primary">登录</button></div>				
+			</div>
+			
+		</div>
+		
+	  </div>
+	</div>
+
+</body>
+</html>

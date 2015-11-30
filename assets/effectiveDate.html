@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimum-scale=1.0, maximum-scale=1.0">
+<title>生效周期</title>
+
+<link rel="stylesheet" href="font-awesome-4.1.0/css/font-awesome.min.css" />
+<link rel="stylesheet" href="css/bootstrap.min.css"/>
+<link rel="stylesheet" href="sw/style.css">
+<link rel="stylesheet" href="css/common.css"/>
+<script type="text/javascript" src="js/jquery-1.11.2.min.js"></script>
+<script type="text/javascript" src="js/iscroll-probe.js"></script>
+<script type="text/javascript" src="js/ois.js"></script>
+<script type="text/javascript" src="js/jsbridge.js"></script>
+<script type="text/javascript" src="js/dialog.js"></script>
+</head>
+<body>
+	<div class="header">
+		<div>
+			<div class="back" id="backTopc"><span class="icon-back"></span></div>
+			<div id="settingTitle" class="title">生效周期</div>
+		</div>
+	</div>
+	<div id="wrapper" style="bottom: 0px;">
+		<div id="scroller">
+			<div class="content" >
+				<ul class="list-group">
+					<li class="list-group-item clearfix" >
+						<div class="pull-left">周一</div>
+						<div class="pull-right" style="color:#f56931;"><span class="icon-ciycle icon-lg"></span></div>
+					</li>
+					<li class="list-group-item clearfix" >
+						<div class="pull-left">周二</div>
+						<div class="pull-right" style="color:#f56931;"><span class="icon-ciycle icon-lg"></span></div>
+					</li>
+					<li class="list-group-item clearfix" >
+						<div class="pull-left">周三</div>
+						<div class="pull-right" style="color:#f56931;"><span class="icon-ciycle icon-lg"></span></div>
+					</li>
+					<li class="list-group-item clearfix" >
+						<div class="pull-left">周四</div>
+						<div class="pull-right" style="color:#f56931;"><span class="icon-ciycle icon-lg"></span></div>
+					</li>
+					<li class="list-group-item clearfix" >
+						<div class="pull-left">周五</div>
+						<div class="pull-right" style="color:#f56931;"><span class="icon-ciycle icon-lg"></span></div>
+					</li>
+					<li class="list-group-item clearfix" >
+						<div class="pull-left">周六</div>
+						<div class="pull-right" style="color:#f56931;"><span class="icon-ciycle icon-lg"></span></div>
+					</li>
+					<li class="list-group-item clearfix" >
+						<div class="pull-left">周日</div>
+						<div class="pull-right" style="color:#f56931;"><span class="icon-ciycle icon-lg"></span></div>
+					</li>
+				</ul>
+				<button type="button" class="btn-orange" style="margin-top:40px;">确定</button>
+			</div>
+		</div>
+	</div>
+	
+		
+</body>
+<script type="text/javascript">
+	var lastClickTime = new Date().getTime();
+	var myScroll;
+	var ois = new OIS();
+	var dialog = new Dialog();
+	var settings = {"cameraSwitch" : "power", "alertSwitch" : "alert", "sd" : "record"};
+	var userID = JSBridge.get("currentUser");
+	var mac = JSBridge.get("mac");
+	//var mac = "38:bc:1a:e3:49:97";
+	var setting = localStorage.getItem("cameraSetting"); 
+	var item = settings[setting];///当前是是设置的有效日期是power/alert/record
+	var cameraInfo = JSON.parse(localStorage.getItem("currentCamera")); 
+	
+	var cameraID = cameraInfo.base.camera_id;
+	var days ;
+	var effectiveDateArr;
+	var request = {	
+			"src":mac, //发起请求的设备id, 一般为手机端和PC
+			"dest":cameraID, //请求目标的设备id，一般为摄像头
+			"config":
+			{
+				//item :"", //on:表示打开功能，off：关闭功能
+				"schedule":cameraInfo[item].schedule,
+				"days":"" //重复周期，为从星期一到星期天的位组合，自左向右为星期一到星期日.
+			}
+		};
+	request.config[item] = cameraInfo[item].status == 1 ? "on" : "off";
+	
+	$(document).ready(function(){
+		init();
+		$(".list-group li").each(function(i,item){
+			var $thisCheckIcon = $(this).find("span");
+			$(this).on("click",function(){
+				if($thisCheckIcon.hasClass("icon-ok") ==true){
+					$thisCheckIcon.removeClass("icon-ok").addClass("icon-ciycle");
+					effectiveDateArr[i] = 0;
+				}else{
+					$thisCheckIcon.removeClass("icon-ciycle").addClass("icon-ok");
+					effectiveDateArr[i] = 1;
+				}
+			});
+		});
+		$("button").on("click",function(){
+			var currentTime = new Date().getTime();
+			if(currentTime - lastClickTime > 500){	
+				lastClickTime = currentTime;
+				setDays();	
+			}	 
+		});
+
+		$("#backTopc").on("click",function(){
+			window.location.href="./timeSwitch.html";
+			//window.location.href="./timeSwitch.html?effectiveDate="+effectiveDateArr.join("");
+		})
+	}); 
+	$(document).on("back",function(){
+		$("#backTopc").trigger("click");
+	});
+	function setDays(){
+		request.config.days = effectiveDateArr.join("");
+		ois.setSwitch(request,function(code, data){
+			if(data.error_code == 0){//设置成功了，存进localStorage里威力后面的页面取值
+				cameraInfo[item] = {
+						"schedule":request.config.schedule,
+						"days":request.config.days
+					}
+				cameraInfo[item].status = request.config[item] == "on" ? 1:0;
+				localStorage.setItem("currentCamera", JSON.stringify(cameraInfo));
+				localStorage.setItem("effectiveDate", request.config.days);
+				dialog.hide();
+				dialog.toast("设置成功");
+			}				
+		},function(code){
+			dialog.hide();
+			if(code==623){
+				dialog.toast("摄像头离线了");
+			}else{
+				dialog.toast("请求失败");
+			}
+		});
+	}
+	function init(){
+		//myScroll = new IScroll('#wrapper',{ mouseWheel: true ,click:true, probeType:1, bounce:true});
+		if(cameraInfo[item].schedule.length == 1){//已经设置过计划了
+			days = cameraInfo[item].days;
+			request.config.schedule = cameraInfo[item].schedule;
+			request.config.days = days;	
+		}else{//没设置过计划，设置默认值
+			days = "1111111";
+			request.config.schedule = [{"start":"00:00","end":"23:59"}];
+			request.config.days = days;	
+		}
+		showEffectiveDays(days);
+		effectiveDateArr = days.split("");
+	}
+	function showEffectiveDays(days){
+		var daysArr = days.split("");
+		for(var i=0; i<7; i++){
+			if(daysArr[i] == 1){
+				$(".list-group li").eq(i).find("span").removeClass("icon-ciycle").addClass("icon-ok");
+			}else{
+				$(".list-group li").eq(i).find("span").removeClass("icon-ok").addClass("icon-ciycle");
+			}
+		}
+	}
+</script>
+</html>
